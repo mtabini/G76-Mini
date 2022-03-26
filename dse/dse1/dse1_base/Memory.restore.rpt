@@ -1,0 +1,89 @@
+Restore Archived Project report for Memory
+Sun Mar 20 16:54:58 2022
+Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Restore Archived Project Summary
+  3. Restore Archived Project Messages
+  4. Files Restored
+  5. Files Not Restored
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2021  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.
+
+
+
++-------------------------------------------------------------------------+
+; Restore Archived Project Summary                                        ;
++---------------------------------+---------------------------------------+
+; Restore Archived Project Status ; Successful - Sun Mar 20 16:54:58 2022 ;
+; Revision Name                   ; Memory                                ;
+; Top-level Entity Name           ; VGA                                   ;
+; Family                          ; MAX II                                ;
++---------------------------------+---------------------------------------+
+
+
++-----------------------------------+
+; Restore Archived Project Messages ;
++-----------------------------------+
+Info: Successfully restored 'C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/Memory.qar' into the 'dse/dse1/dse1_base' directory
+Info: Generated report 'Memory.restore.rpt'
+Info (23030): Evaluation of Tcl script c:/intelfpga_lite/21.1/quartus/common/tcl/apps/qpm/qar.tcl was successful
+Info: Quartus Prime Shell was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 4827 megabytes
+    Info: Processing ended: Sun Mar 20 16:54:58 2022
+    Info: Elapsed time: 00:00:00
+    Info: Total CPU time (on all processors): 00:00:00
+
+
++-------------------------+
+; Files Restored          ;
++-------------------------+
+; File Name               ;
++-------------------------+
+; qar_info.json           ;
+; Memory.dse              ;
+; Memory.qsf              ;
+; VGA.qsf                 ;
+; VGA.sv                  ;
+; VGA320.qpf              ;
+; clock_generator.sv      ;
+; clock_phases.sv         ;
+; memory_manager.sv       ;
+; mpu_fifo.qip            ;
+; mpu_fifo.v              ;
+; mpu_fifo_bb.v           ;
+; mpu_interface.sv        ;
+; video_output.sv         ;
+; assignment_defaults.qdf ;
++-------------------------+
+
+
++--------------------+
+; Files Not Restored ;
++--------------------+
+; File Name          ;
++--------------------+
+
+

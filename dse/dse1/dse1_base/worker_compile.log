@@ -1,0 +1,178 @@
+Info: *******************************************************************
+Info: Running Quartus Prime Shell
+Info: Command: quartus_sh --flow compile Memory.qsf
+Info: Quartus(args): compile Memory.qsf
+Info: Project Name = C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/Memory
+Info: Revision Name = Memory
+{"object_type": "report_status", "percent" : 0}
+Info: *******************************************************************
+Info: Running Quartus Prime Signal Tap
+Info: Command: quartus_stp Memory -c Memory
+Info: Quartus Prime Signal Tap was successful. 0 errors, 0 warnings
+{"object_type": "report_status", "percent" : 16}
+{"object_type": "report_status", "percent" : 16}
+{"object_type": "report_status", "percent" : 17}
+Info: *******************************************************************
+Info: Running Quartus Prime Analysis & Synthesis
+Info: Command: quartus_map --read_settings_files=off --write_settings_files=off Memory -c Memory
+Info: Aggressive Area optimization mode selected -- logic area will be prioritized at the potential cost of reduced timing performance
+{"object_type": "refresh_report"}
+Info: Parallel compilation is enabled and will use 4 of the 4 processors detected
+Info: Found 2 design units, including 2 entities, in source file mpu_interface.sv
+Info: Found 1 design units, including 1 entities, in source file memory_manager.sv
+Info: Found 2 design units, including 2 entities, in source file video_output.sv
+Info: Found 2 design units, including 2 entities, in source file clock_generator.sv
+Warning: Verilog HDL Module Instantiation warning at VGA.sv(90): ignored dangling comma in List of Port Connections
+Info: Found 2 design units, including 2 entities, in source file vga.sv
+Info: Found 1 design units, including 1 entities, in source file mpu_fifo.v
+{"object_type": "report_status", "percent" : 17}
+{"object_type": "report_status", "percent" : 18}
+{"object_type": "report_status", "percent" : 18}
+Info: Elaborating entity "VGA" for the top level hierarchy
+Info: Elaborating entity "ClockGenerator" for hierarchy "ClockGenerator:clockGenerator"
+Info: Elaborating entity "VideoOutput" for hierarchy "VideoOutput:videoOutput"
+Info: Elaborating entity "MemoryManager" for hierarchy "MemoryManager:memoryManager"
+Info: Elaborating entity "MPUInterface" for hierarchy "MPUInterface:mpuInterface"
+Warning: Verilog HDL assignment warning at mpu_interface.sv(56): truncated value with size 32 to match size of target (8)
+Info: Elaborating entity "mpu_fifo" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue"
+Info: Elaborating entity "dcfifo" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component"
+Info: Elaborated megafunction instantiation "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component"
+Info: Instantiated megafunction "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component" with the following parameter:
+Info: Found 1 design units, including 1 entities, in source file db/dcfifo_led1.tdf
+Info: Elaborating entity "dcfifo_led1" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated"
+Info: Found 1 design units, including 1 entities, in source file db/a_fefifo_ahc.tdf
+Info: Elaborating entity "a_fefifo_ahc" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|a_fefifo_ahc:read_state"
+Info: Found 1 design units, including 1 entities, in source file db/a_fefifo_0vb.tdf
+Info: Elaborating entity "a_fefifo_0vb" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|a_fefifo_0vb:write_state"
+Info: Found 1 design units, including 1 entities, in source file db/a_gray2bin_uua.tdf
+Info: Elaborating entity "a_gray2bin_uua" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|a_gray2bin_uua:gray2bin_rs_nbwp"
+Info: Found 1 design units, including 1 entities, in source file db/a_graycounter_tj6.tdf
+Info: Elaborating entity "a_graycounter_tj6" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|a_graycounter_tj6:rdptr_g"
+Info: Found 1 design units, including 1 entities, in source file db/a_graycounter_2r5.tdf
+Info: Elaborating entity "a_graycounter_2r5" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|a_graycounter_2r5:wrptr_g"
+Info: Elaborating entity "altdpram" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam"
+Warning: Assertion warning: Current device family (MAX II) does not support dual-port synchronous RAM -- implementing the synchronous RAM as a DFFE array instead
+Info: Elaborated megafunction instantiation "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam"
+Info: Instantiated megafunction "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam" with the following parameter:
+Info: Elaborating entity "lpm_mux" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam|lpm_mux:mux"
+Info: Elaborated megafunction instantiation "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam|lpm_mux:mux", which is child of megafunction instantiation "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam"
+Info: Found 1 design units, including 1 entities, in source file db/mux_7bc.tdf
+Info: Elaborating entity "mux_7bc" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam|lpm_mux:mux|mux_7bc:auto_generated"
+Info: Elaborating entity "lpm_decode" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam|lpm_decode:wdecoder"
+Info: Elaborated megafunction instantiation "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam|lpm_decode:wdecoder", which is child of megafunction instantiation "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam"
+Info: Found 1 design units, including 1 entities, in source file db/decode_ndf.tdf
+Info: Elaborating entity "decode_ndf" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|altdpram:fiforam|lpm_decode:wdecoder|decode_ndf:auto_generated"
+Info: Found 1 design units, including 1 entities, in source file db/dffpipe_9d9.tdf
+Info: Elaborating entity "dffpipe_9d9" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|dffpipe_9d9:dffpipe_rdbuw"
+Info: Found 1 design units, including 1 entities, in source file db/alt_synch_pipe_hc8.tdf
+Info: Elaborating entity "alt_synch_pipe_hc8" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|alt_synch_pipe_hc8:dffpipe_rs_dgwp"
+Info: Found 1 design units, including 1 entities, in source file db/dffpipe_bd9.tdf
+Info: Elaborating entity "dffpipe_bd9" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|alt_synch_pipe_hc8:dffpipe_rs_dgwp|dffpipe_bd9:dffpipe10"
+Info: Found 1 design units, including 1 entities, in source file db/add_sub_kob.tdf
+Info: Elaborating entity "add_sub_kob" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|add_sub_kob:lpm_add_sub_rd_udwn"
+Info: Found 1 design units, including 1 entities, in source file db/cntr_gna.tdf
+Info: Elaborating entity "cntr_gna" for hierarchy "MPUInterface:mpuInterface|mpu_fifo:pendingWriteQueue|dcfifo:dcfifo_component|dcfifo_led1:auto_generated|cntr_gna:rdptr_b"
+{"object_type": "report_status", "percent" : 23}
+Warning: Net is missing source, defaulting to GND
+Warning: Net is missing source, defaulting to GND
+{"object_type": "report_status", "percent" : 23}
+{"object_type": "report_status", "percent" : 24}
+{"object_type": "report_status", "percent" : 23}
+{"object_type": "report_status", "percent" : 24}
+Warning: 1 hierarchies have connectivity warnings - see the Connectivity Checks report folder
+Info: Resynthesizing 0 WYSIWYG logic cells and I/Os using "area" technology mapper which leaves 2 WYSIWYG logic cells and I/Os untouched
+{"object_type": "report_status", "percent" : 27}
+{"object_type": "report_status", "percent" : 27}
+{"object_type": "report_status", "percent" : 27}
+{"object_type": "report_status", "percent" : 27}
+{"object_type": "report_status", "percent" : 28}
+{"object_type": "report_status", "percent" : 28}
+{"object_type": "report_status", "percent" : 28}
+{"object_type": "report_status", "percent" : 28}
+{"object_type": "report_status", "percent" : 28}
+{"object_type": "report_status", "percent" : 28}
+{"object_type": "report_status", "percent" : 29}
+{"object_type": "report_status", "percent" : 29}
+{"object_type": "report_status", "percent" : 29}
+{"object_type": "report_status", "percent" : 29}
+{"object_type": "report_status", "percent" : 29}
+{"object_type": "report_status", "percent" : 29}
+{"object_type": "report_status", "percent" : 30}
+{"object_type": "report_status", "percent" : 30}
+{"object_type": "report_status", "percent" : 31}
+{"object_type": "report_status", "percent" : 32}
+Info: 2 registers lost all their fanouts during netlist optimizations.
+Warning: Design contains 12 input pin(s) that do not drive logic
+Info: Implemented 441 device resources after synthesis - the final resource count might be different
+Info: Generated JSON formatted report files in C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/db/Memory.map.json_files/
+Info: Generated JSON formatted report files in C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/db/Memory.flow.json_files/
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 21 warnings
+{"object_type": "report_status", "percent" : 33}
+{"object_type": "refresh_report"}
+{"object_type": "report_status", "percent" : 33}
+Info: *******************************************************************
+Info: Running Quartus Prime Fitter
+Info: Command: quartus_fit --read_settings_files=off --write_settings_files=off Memory -c Memory
+Info: qfit2_default_script.tcl version: #1
+Info: Project  = Memory
+Info: Revision = Memory
+{"object_type": "report_status", "percent" : 34}
+{"object_type": "refresh_report"}
+Info: Aggressive Area optimization mode selected -- logic area will be prioritized at the potential cost of reduced timing performance
+Info: Parallel compilation is enabled and will use 4 of the 4 processors detected
+Info: Selected device EPM240T100C5 for design "Memory"
+Info: Low junction temperature is 0 degrees C
+Info: High junction temperature is 85 degrees C
+Info: Fitter is performing an Auto Fit compilation, which may decrease Fitter effort to reduce compilation time
+Warning: Feature LogicLock is only available with a valid subscription license. You can purchase a software subscription to gain full access to this feature.
+{"object_type": "report_status", "percent" : 35}
+Info: Device migration not selected. If you intend to use device migration later, you may need to change the pin assignments as they may be incompatible with other devices
+{"object_type": "report_status", "percent" : 35}
+{"object_type": "report_status", "percent" : 35}
+{"object_type": "report_status", "percent" : 38}
+Info: Evaluating HDL-embedded SDC commands
+Critical Warning: Synopsys Design Constraints File file not found: 'Memory.sdc'. A Synopsys Design Constraints File is required by the Timing Analyzer to get proper timing constraints. Without it, the Compiler will not properly optimize the design.
+Info: No user constrained base clocks found in the design
+Info: Timing requirements not specified -- optimizing circuit to achieve the following default global requirements
+Info: Found 3 clocks
+Extra Info: Performing register packing on registers with non-logic cell location assignments
+Extra Info: Completed register packing on registers with non-logic cell location assignments
+Info: Completed User Assigned Global Signals Promotion Operation
+{"object_type": "report_status", "percent" : 36}
+Info: Automatically promoted signal "clock" to use Global clock in PIN 12
+Info: Automatically promoted signal "mpuChipSelect" to use Global clock
+Info: Pin "mpuChipSelect" drives global clock, but is not placed in a dedicated clock pin position
+Info: Automatically promoted some destinations of signal "ClockGenerator:clockGenerator|clockPhase[0]" to use Global clock
+Info: Completed Auto Global Promotion Operation
+Info: Starting register packing
+{"object_type": "report_status", "percent" : 38}
+Extra Info: Moving registers into LUTs to improve timing and density
+Info: Started processing fast register assignments
+Info: Finished processing fast register assignments
+Extra Info: Finished moving registers into LUTs: elapsed time is 00:00:00
+Info: Finished register packing
+{"object_type": "report_status", "percent" : 36}
+{"object_type": "report_status", "percent" : 36}
+Info: Fitter preparation operations ending: elapsed time is 00:00:00
+Info: Fitter has disabled Advanced Physical Optimization because it is not supported for the current family.
+{"object_type": "report_status", "percent" : 36}
+{"object_type": "report_status", "percent" : 38}
+Info: Fitter placement preparation operations beginning
+{"object_type": "report_status", "percent" : 36}
+Error: Design contains 310 blocks of type logic cell.  However, the device contains only 240 blocks.
+Warning: The Fitter is having difficulty fitting the design.  Try increasing the "Auto Packed Register" setting under "Advanced Fitter Settings" to minimize area.
+Info: Fitter placement preparation operations ending: elapsed time is 00:00:00
+Info: Total time spent on timing analysis during the Fitter is 0.01 seconds.
+Error: Can't fit design in device
+Warning: The Reserve All Unused Pins setting has not been specified, and will default to 'As output driving ground'.
+Info: Generated suppressed messages file C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/output_files/Memory.fit.smsg
+Info: Generated JSON formatted report files in C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/db/Memory.fit.json_files/
+Info: Generated JSON formatted report files in C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/db/Memory.flow.json_files/
+Error: Quartus Prime Fitter was unsuccessful. 2 errors, 4 warnings
+{"object_type": "refresh_report"}
+Error: Quartus Prime Full Compilation was unsuccessful. 4 errors, 25 warnings
+Error: Flow compile (for project C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/dse1_base/Memory) was not successful
+Error: ERROR: Error(s) found while running an executable. See report file(s) for error message(s). Message log indicates which executable was run last.
+
+Error: Evaluation of Tcl script c:/intelfpga_lite/21.1/quartus/common/tcl/internal/qsh_flow.tcl unsuccessful
+Error: Quartus Prime Shell was unsuccessful. 11 errors, 25 warnings

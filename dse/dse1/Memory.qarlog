@@ -1,0 +1,25 @@
+Quartus Prime Archive log --	C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/Memory.qarlog
+
+Archive:	C:/Users/MarcoTabini/Documents/Quartus/VGA/dse/dse1/Memory.qar
+Date:		Sun Mar 20 16:54:51 2022
+Quartus Prime		21.1.0 Build 842 10/21/2021 SJ Lite Edition
+
+	=========== Files Selected: ===========
+C:/Users/MarcoTabini/Documents/Quartus/VGA/Memory.dse
+C:/Users/MarcoTabini/Documents/Quartus/VGA/Memory.qsf
+C:/Users/MarcoTabini/Documents/Quartus/VGA/VGA.qsf
+C:/Users/MarcoTabini/Documents/Quartus/VGA/VGA.sv
+C:/Users/MarcoTabini/Documents/Quartus/VGA/VGA320.qpf
+C:/Users/MarcoTabini/Documents/Quartus/VGA/clock_generator.sv
+C:/Users/MarcoTabini/Documents/Quartus/VGA/clock_phases.sv
+C:/Users/MarcoTabini/Documents/Quartus/VGA/memory_manager.sv
+C:/Users/MarcoTabini/Documents/Quartus/VGA/mpu_fifo.qip
+C:/Users/MarcoTabini/Documents/Quartus/VGA/mpu_fifo.v
+C:/Users/MarcoTabini/Documents/Quartus/VGA/mpu_fifo_bb.v
+C:/Users/MarcoTabini/Documents/Quartus/VGA/mpu_interface.sv
+C:/Users/MarcoTabini/Documents/Quartus/VGA/video_output.sv
+c:/intelfpga_lite/21.1/quartus/bin64/assignment_defaults.qdf
+	======= Total: 14 files to archive =======
+
+	================ Status: ===============
+All files archived successfully.
