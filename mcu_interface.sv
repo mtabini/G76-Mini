@@ -54,24 +54,4 @@ module MCUInterface(
     end
   end
 
-  // always_ff @(posedge clock) begin
-  //   if (memoryWriteRequest) begin
-  //     memoryWriteRequest <= ~memoryWriteComplete;
-  //   end else begin
-  //     if (mpuChipSelect && !mpuWriteEnable) begin
-  //       case (mpuRegisterSelect)
-  //         REGISTER_X_LOW  : xCoord[7:0] <= mpuData;
-  //         REGISTER_X_HIGH : xCoord[8] <= mpuData[0];
-  //         REGISTER_Y      : yCoord <= mpuData;
-  //         REGISTER_DATA   : begin
-  //           memoryXCoord <= xCoord;
-  //           memoryYCoord <= yCoord;
-  //           memoryWriteData <= mpuData;
-  //           memoryWriteRequest <= 1;
-  //         end
-  //       endcase
-  //     end
-  //   end
-  // end
-
 endmodule
