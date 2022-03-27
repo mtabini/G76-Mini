@@ -28,8 +28,10 @@ module VGA(
 
   logic           memoryReadRequest;
   logic           memoryWriteRequest;
-  logic  [7:0]    memoryWriteData;  
-  
+  logic           memoryReadComplete;
+  logic           memoryWriteComplete;
+
+  logic  [7:0]    memoryWriteData;    
   logic  [7:0]    memoryReadData;
 
 
@@ -48,6 +50,8 @@ module VGA(
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryReadData(memoryReadData),
 		.memoryWriteData(memoryWriteData),
+		.memoryWriteComplete(memoryWriteComplete),
+		.memoryReadComplete(memoryReadComplete),
 
 		.ramAddress(ramAddress),
 		.ramData(ramData),
@@ -70,26 +74,45 @@ module VGA(
 		.vSync(vSync)
 	);
 
-	`include "clock_phases.sv"
+	MCUInterface mpuInterface(
+		.clock(clock),
 
-	logic [8:0] xx;
-	logic [7:0] yy;
+		.memoryXCoord(memoryXCoord),
+		.memoryYCoord(memoryYCoord),
 
-	always_ff @(posedge clock) begin
-		if (currentState == CLOCK_PHASE_PREP_MEMORY_OP) begin
-			memoryWriteRequest <= 1;
-			memoryXCoord <= xx;
-			memoryYCoord <= yy;
-			memoryWriteData <= xx % 256;
+		.memoryReadRequest(memoryReadRequest),
+		.memoryWriteRequest(memoryWriteRequest),
+		.memoryWriteData(memoryWriteData),
+
+		.memoryReadData(memoryReadData),
+		.memoryReadComplete(memoryReadComplete),
+		.memoryWriteComplete(memoryWriteComplete),
+
+		.mpuChipSelect(mpuChipSelect),
+		.mpuWriteEnable(mpuWriteEnable),
+		.mpuRegisterSelect(mpuRegisterSelect),
+		.mpuData(mpuData)
+	);
+
+	// logic [8:0] xx;
+	// logic [7:0] yy;
+
+	// always_ff @(posedge clock) begin
+  //   if (memoryWriteRequest) begin
+  //     memoryWriteRequest <= ~memoryWriteComplete;
+  //   end else begin
+	// 		memoryWriteRequest <= 1;
+	// 		memoryXCoord <= xx;
+	// 		memoryYCoord <= yy;
+	// 		memoryWriteData <= yy[7:0];
 			
-			if (xx == 319) begin
-				xx <= 0;
-				yy <= yy == 239 ? 0 : yy + 1;
-			end else
-				xx <= xx + 1;
-		end
-	end
-
+	// 		if (xx == 319) begin
+	// 			xx <= 0;
+	// 			yy <= yy == 239 ? 1'b0 : yy + 1'b1;
+	// 		end else
+	// 			xx <= xx + 1'b1;
+	// 	end
+	// end
 
 endmodule
 

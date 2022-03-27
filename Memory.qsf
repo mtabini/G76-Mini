@@ -103,9 +103,6 @@ set_location_assignment PIN_44 -to mpuRegisterSelect[0]
 set_location_assignment PIN_47 -to mpuRegisterSelect[1]
 set_location_assignment PIN_48 -to mpuRegisterSelect[2]
 set_global_assignment -name OPTIMIZATION_MODE BALANCED
-set_global_assignment -name SYSTEMVERILOG_FILE memory_manager.sv
-set_global_assignment -name SYSTEMVERILOG_FILE video_output.sv
-set_global_assignment -name SYSTEMVERILOG_FILE VGA.sv
 set_location_assignment PIN_41 -to videoOutputData[7]
 set_location_assignment PIN_40 -to videoOutputData[6]
 set_location_assignment PIN_39 -to videoOutputData[5]
@@ -114,3 +111,7 @@ set_location_assignment PIN_37 -to videoOutputData[3]
 set_location_assignment PIN_36 -to videoOutputData[2]
 set_location_assignment PIN_35 -to videoOutputData[1]
 set_location_assignment PIN_34 -to videoOutputData[0]
+set_global_assignment -name SYSTEMVERILOG_FILE mcu_interface.sv
+set_global_assignment -name SYSTEMVERILOG_FILE memory_manager.sv
+set_global_assignment -name SYSTEMVERILOG_FILE video_output.sv
+set_global_assignment -name SYSTEMVERILOG_FILE VGA.sv

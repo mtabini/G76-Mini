@@ -17,6 +17,8 @@ module MemoryManager (
   input  [7:0]        memoryWriteData,  
   
   output logic [7:0]  memoryReadData,
+  output logic        memoryReadComplete,
+  output logic        memoryWriteComplete,
 
   output logic [16:0] ramAddress,
   inout [7:0]         ramData,
@@ -54,6 +56,22 @@ module MemoryManager (
 
   always_ff @(posedge clock) begin
     if (reset) begin
+      memoryWriteComplete <= 0;
+    end else begin
+      memoryWriteComplete <= memoryWriteRequest && (nextState == CLOCK_PHASE_COMPLETE);
+    end
+  end
+
+  always_ff @(posedge clock) begin
+    if (reset) begin
+      memoryReadComplete <= 0;
+    end else begin
+      memoryReadComplete <= memoryWriteRequest && (nextState == CLOCK_PHASE_COMPLETE);
+    end
+  end
+
+  always_ff @(posedge clock) begin
+    if (reset) begin
       currentState <= 0;
     end else begin
       currentState <= nextState;
@@ -63,32 +81,48 @@ module MemoryManager (
   always_ff @(posedge clock) begin
     case(nextState)
       CLOCK_PHASE_VIDEO_READ: ramAddress <= { videoYCoord, videoXCoord };
-      CLOCK_PHASE_MEM_READ:   ramAddress <= { memoryYCoord, memoryXCoord };
+      CLOCK_PHASE_MEM_READ,   
       CLOCK_PHASE_MEM_WRITE:  ramAddress <= { memoryYCoord, memoryXCoord };
       default:                ramAddress <= 0;
     endcase
   end
 
   always_ff @(posedge clock) begin
-    ramOutputEnable <= ~(nextState == CLOCK_PHASE_VIDEO_READ || nextState == CLOCK_PHASE_MEM_READ);
+    if (reset) begin
+      ramOutputEnable <= 1;
+    end else begin
+      ramOutputEnable <= ~(nextState == CLOCK_PHASE_VIDEO_READ || nextState == CLOCK_PHASE_MEM_READ);
+    end
   end
 
   always_ff @(posedge clock) begin
-    ramWriteEnable <= ~(nextState == CLOCK_PHASE_MEM_WRITE);
+    if (reset) begin
+      ramWriteEnable <= 1;
+    end else begin
+      ramWriteEnable <= ~(nextState == CLOCK_PHASE_MEM_WRITE);
+    end
   end
 
   always_ff @(posedge clock) begin
-    case (currentState)
-      CLOCK_PHASE_VIDEO_READ : videoData <= ramData;
-      CLOCK_PHASE_MEM_READ   : memoryReadData <= ramData;
-    endcase
-    
+    if (reset) begin
+      videoData <= 0;
+      memoryReadData <= 0;
+    end else begin
+      case (currentState)
+        CLOCK_PHASE_VIDEO_READ : videoData <= ramData;
+        CLOCK_PHASE_MEM_READ   : memoryReadData <= ramData;
+      endcase
+    end    
   end
 
   always_ff @(posedge clock) begin
-    videoDataReady <= (currentState == CLOCK_PHASE_MEM_READ ||
-                       currentState == CLOCK_PHASE_MEM_WRITE ||
-                       currentState == CLOCK_PHASE_NOP);
+    if (reset) begin
+      videoDataReady <= 0;
+    end else begin
+      videoDataReady <= (currentState == CLOCK_PHASE_MEM_READ ||
+                        currentState == CLOCK_PHASE_MEM_WRITE ||
+                        currentState == CLOCK_PHASE_NOP);
+    end
   end
 
 endmodule
@@ -114,6 +148,8 @@ module MemoryManagerTB;
   logic  [7:0]      memoryWriteData;  
   
   logic  [7:0]      memoryReadData;
+  logic             memoryWriteComplete;
+  logic             memoryReadComplete;
 
   logic  [16:0]     ramAddress;
   wire  [7:0]       ramData;
@@ -123,6 +159,7 @@ module MemoryManagerTB;
 
   MemoryManager memoryManagerDUT(
     .clock(clock),
+    .reset(reset),
     .currentState(currentState),
 
     .videoXCoord(videoXCoord),
@@ -139,6 +176,8 @@ module MemoryManagerTB;
     .memoryWriteData(memoryWriteData),
 
     .memoryReadData(memoryReadData),
+    .memoryReadComplete(memoryReadComplete),
+    .memoryWriteComplete(memoryWriteComplete),
 
     .ramAddress(ramAddress),
     .ramData(ramData),
@@ -150,9 +189,39 @@ module MemoryManagerTB;
   initial begin
     clock = 0;
     reset = 0;
+
     #1 reset = 1;
+    #1 clock = 1;
+    #1 clock = 0;
     #1 reset = 0;
-    forever #1 clock = ~clock;
+
+    forever #10 clock = ~clock;
   end
 
+	logic [8:0] xx;
+	logic [7:0] yy;
+
+	always_ff @(posedge clock) begin
+    if (reset) begin
+      memoryWriteRequest <= 0;
+      memoryWriteData <= 0;
+      xx <= 0;
+      yy <= 0;
+    end else begin
+      if (memoryWriteRequest) begin
+        memoryWriteRequest <= ~memoryWriteComplete;
+      end else begin
+        memoryWriteRequest <= 1;
+        memoryXCoord <= xx;
+        memoryYCoord <= yy;
+        memoryWriteData <= xx[7:0];
+        
+        if (xx == 319) begin
+          xx <= 0;
+          yy <= yy == 239 ? 1'b0 : yy + 1'b1;
+        end else
+          xx <= xx + 1'b1;
+      end
+    end
+	end
 endmodule

@@ -10,8 +10,6 @@ module VideoOutput (
 
   output logic [7:0]    videoOutput,
 
-  output logic          inVisibleArea,
-
   output logic          hSync,
   output logic          vSync
 );
@@ -45,6 +43,7 @@ module VideoOutput (
   logic [8:0]     yAddr;
 
   logic           pixelClock;
+  logic           inVisibleArea;
 
 
   always_comb begin
@@ -55,7 +54,7 @@ module VideoOutput (
     vSync = (yAddr < V_SYNC_PULSE_START || yAddr > V_SYNC_PULSE_END);
   end
 
-  always_ff @(posedge clock or posedge reset) begin
+  always_ff @(posedge clock) begin
     if (reset) begin
       pixelClock <= 0;
     end else begin
@@ -63,22 +62,18 @@ module VideoOutput (
     end
   end
 
-  always_ff @(posedge pixelClock or posedge reset) begin
+  always_ff @(negedge pixelClock) begin
     if (reset) begin
       xAddr <= 0;
       yAddr <= 0;
     end else begin
       if (xAddr == H_LAST_POSITION) begin
-        xAddr <= '0;
-        yAddr <= (yAddr == V_LAST_POSITION) ? '0 : yAddr + 1'b1;
+        xAddr <= 1'b0;
+        yAddr <= (yAddr == V_LAST_POSITION) ? 1'b0 : yAddr + 1'b1;
       end else begin
-        xAddr <= xAddr + 1;
+        xAddr <= xAddr + 1'b1;
       end
-    end
-  end
 
-  always_ff @(posedge clock) begin
-    if (videoDataReady) begin
       videoOutput <= inVisibleArea ? videoData : 8'bZ;
     end
   end
@@ -93,8 +88,6 @@ module VideoOutputTB;
   logic  [2:0]      currentState;
 
   logic  [7:0]      videoOutput;
-
-  logic             inVisibleArea;
 
   logic             hSync;
   logic             vSync;
@@ -157,8 +150,6 @@ module VideoOutputTB;
     .videoDataReady(videoDataReady),
     
     .videoOutput(videoOutput),
-    
-    .inVisibleArea(inVisibleArea),
     
     .hSync(hSync),
     .vSync(vSync)
