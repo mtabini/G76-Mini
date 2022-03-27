@@ -80,9 +80,9 @@ module MemoryManager (
 
   always_ff @(posedge clock) begin
     case(nextState)
-      CLOCK_PHASE_VIDEO_READ: ramAddress <= videoYCoord * 320 + videoXCoord; //{ videoYCoord, videoXCoord };
+      CLOCK_PHASE_VIDEO_READ: ramAddress <= { videoYCoord, videoXCoord };
       CLOCK_PHASE_MEM_READ,   
-      CLOCK_PHASE_MEM_WRITE:  ramAddress <= memoryYCoord * 320 + memoryXCoord; // { memoryYCoord, memoryXCoord };
+      CLOCK_PHASE_MEM_WRITE:  ramAddress <= { memoryYCoord, memoryXCoord };
       default:                ramAddress <= 0;
     endcase
   end
