@@ -35,7 +35,7 @@ module MemoryManager (
   logic         memoryWriteStarted;
 
 
-  assign ramData = ramWriteEnable ? 8'bZ : memoryWriteData;
+  assign ramData = (memoryWriteStarted || memoryWriteComplete) ? memoryWriteData : 8'bZ;
 
   always_comb begin
     case (currentState)
@@ -89,12 +89,12 @@ module MemoryManager (
     end
   end
 
-  always_ff @(posedge clock) begin
+  always_ff @(negedge clock) begin
     case(nextState)
       CLOCK_PHASE_VIDEO_READ: ramAddress <= { videoYCoord, videoXCoord };
       CLOCK_PHASE_MEM_READ,   
       CLOCK_PHASE_MEM_WRITE:  ramAddress <= { memoryYCoord, memoryXCoord };
-      default:                ramAddress <= 0;
+      // default:                ramAddress <= 0;
     endcase
   end
 
