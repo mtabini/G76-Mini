@@ -52,9 +52,10 @@ module MCUInterface(
 
     mpuPixelWriteRequest = mpuRegisterWriteRequest && (mpuRegisterSelect == REGISTER_DATA);
 
-    if (reset) begin
-      mpuRegisterReadRequest = 0;
-    end else if (mpuRegisterReadRequest) begin
+    // if (reset) begin
+    //   mpuRegisterReadRequest = 0;
+    //   mpuDataBus = 8'bZ;
+    // end else if (mpuRegisterReadRequest) begin
     //   case (mpuRegisterSelect)
     //     REGISTER_X_LOW  : mpuDataBus = mpuXCoord[7:0];
     //     REGISTER_X_HIGH : mpuDataBus = { 7'b0, mpuXCoord[8] };
@@ -63,8 +64,8 @@ module MCUInterface(
     //     default         : mpuDataBus = 8'hff;
     //   endcase
     // end else begin
-      // mpuDataBus = 8'bZ;
-    end
+    //   mpuDataBus = 8'bZ;
+    // end
   end
 
   always_ff @(negedge mpuRegisterWriteRequest or posedge reset) begin

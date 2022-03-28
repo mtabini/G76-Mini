@@ -91,9 +91,9 @@ module MemoryManager (
 
   always_ff @(negedge clock) begin
     case(nextState)
-      CLOCK_PHASE_VIDEO_READ: ramAddress <= { videoYCoord, videoXCoord };
+      CLOCK_PHASE_VIDEO_READ : ramAddress <= { videoYCoord, videoXCoord };
       CLOCK_PHASE_MEM_READ,   
-      CLOCK_PHASE_MEM_WRITE:  ramAddress <= { memoryYCoord, memoryXCoord };
+      CLOCK_PHASE_MEM_WRITE  : ramAddress <= { memoryYCoord, memoryXCoord };
       // default:                ramAddress <= 0;
     endcase
   end
