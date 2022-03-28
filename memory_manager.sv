@@ -77,7 +77,7 @@ module MemoryManager (
     if (reset) begin
       memoryReadComplete <= 0;
     end else begin
-      memoryReadComplete <= memoryWriteRequest && (nextState == CLOCK_PHASE_COMPLETE);
+      memoryReadComplete <= memoryReadRequest && (nextState == CLOCK_PHASE_COMPLETE);
     end
   end
 
@@ -91,10 +91,10 @@ module MemoryManager (
 
   always_ff @(negedge clock) begin
     case(nextState)
+      CLOCK_PHASE_IDLE,
       CLOCK_PHASE_VIDEO_READ : ramAddress <= { videoYCoord, videoXCoord };
       CLOCK_PHASE_MEM_READ,   
       CLOCK_PHASE_MEM_WRITE  : ramAddress <= { memoryYCoord, memoryXCoord };
-      // default:                ramAddress <= 0;
     endcase
   end
 
@@ -151,6 +151,10 @@ module MemoryManagerTB;
   logic  [7:0]      videoData;
   logic             videoDataReady;
 
+  logic             hSync;
+  logic             vSync;
+  logic  [7:0]      videoOutputData;
+
   logic  [8:0]      memoryXCoord;
   logic  [7:0]      memoryYCoord;
 
@@ -196,6 +200,22 @@ module MemoryManagerTB;
     .ramOutputEnable(ramOutputEnable),
     .ramWriteEnable(ramWriteEnable)
   );
+
+	VideoOutput videoOutput(
+    .reset(reset),
+		.clock(clock),
+		.currentState(currentState),
+
+		.xCoord(videoXCoord),
+		.yCoord(videoYCoord),
+		.videoData(videoData),
+		.videoDataReady(videoDataReady),
+
+		.videoOutput(videoOutputData),
+
+		.hSync(hSync),
+		.vSync(vSync)
+	);
 
   initial begin
     clock = 0;
