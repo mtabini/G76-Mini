@@ -13,7 +13,7 @@ module VGA(
   input           mpuChipSelect,
   input           mpuWriteEnable,
   input  [2:0]    mpuRegisterSelect,
-  input  [7:0]    mpuData
+  inout  [7:0]    mpuData
 );
 
   logic  [2:0]    currentState;
@@ -91,7 +91,7 @@ module VGA(
 		.mpuChipSelect(mpuChipSelect),
 		.mpuWriteEnable(mpuWriteEnable),
 		.mpuRegisterSelect(mpuRegisterSelect),
-		.mpuData(mpuData)
+		.mpuDataBus(mpuData)
 	);
 
 	// logic [8:0] xx;

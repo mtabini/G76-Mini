@@ -31,7 +31,8 @@ module MemoryManager (
   `include "clock_phases.sv"
 
 
-  logic  [2:0]      nextState;
+  logic  [2:0]  nextState;
+  logic         memoryWriteStarted;
 
 
   assign ramData = ramWriteEnable ? 8'bZ : memoryWriteData;
@@ -57,8 +58,18 @@ module MemoryManager (
   always_ff @(posedge clock) begin
     if (reset) begin
       memoryWriteComplete <= 0;
+      memoryWriteStarted <= 0;
     end else begin
-      memoryWriteComplete <= memoryWriteRequest && (nextState == CLOCK_PHASE_COMPLETE);
+      if (memoryWriteRequest && (nextState == CLOCK_PHASE_MEM_WRITE)) begin
+        memoryWriteStarted <= 1;
+      end
+
+      if (memoryWriteStarted && (nextState == CLOCK_PHASE_COMPLETE)) begin
+        memoryWriteComplete <= 1;
+        memoryWriteStarted <= 0;
+      end else begin
+        memoryWriteComplete <= 0;
+      end
     end
   end
 
