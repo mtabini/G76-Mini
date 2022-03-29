@@ -1,22 +1,19 @@
 module MCUInterface(
-  input           reset,
-  input           clock,
+  input                 reset,
+  input                 clock,
 
   output logic [8:0]    memoryXCoord,
   output logic [7:0]    memoryYCoord,
 
-  output logic         memoryReadRequest,
-  output logic         memoryWriteRequest,
+  output logic          memoryWriteRequest,
   output logic [7:0]    memoryWriteData,  
 
-  input  [7:0]    memoryReadData,
-  input           memoryReadComplete,
-  input           memoryWriteComplete,
+  input                 memoryWriteComplete,
 
-  input           mpuChipSelect,
-  input           mpuWriteEnable,
-  input  [2:0]    mpuRegisterSelect,
-  input  [7:0]    mpuDataBus
+  input                 mpuChipSelect,
+  input                 mpuWriteEnable,
+  input  [2:0]          mpuRegisterSelect,
+  inout  [7:0]          mpuDataBus
 );
 
 
@@ -35,7 +32,6 @@ module MCUInterface(
 
 
   logic       mpuRegisterWriteRequest;
-  logic       mpuRegisterReadRequest;
   logic       mpuPixelWriteRequest;
 
   logic [8:0] mpuXCoord;
@@ -48,24 +44,7 @@ module MCUInterface(
 
   always_comb begin
     mpuRegisterWriteRequest = mpuChipSelect && !mpuWriteEnable;
-    mpuRegisterReadRequest = mpuChipSelect && mpuWriteEnable;
-
     mpuPixelWriteRequest = mpuRegisterWriteRequest && (mpuRegisterSelect == REGISTER_DATA);
-
-    // if (reset) begin
-    //   mpuRegisterReadRequest = 0;
-    //   mpuDataBus = 8'bZ;
-    // end else if (mpuRegisterReadRequest) begin
-    //   case (mpuRegisterSelect)
-    //     REGISTER_X_LOW  : mpuDataBus = mpuXCoord[7:0];
-    //     REGISTER_X_HIGH : mpuDataBus = { 7'b0, mpuXCoord[8] };
-    //     REGISTER_Y      : mpuDataBus = mpuYCoord;
-    //     REGISTER_DATA   : mpuDataBus = mpuPixelColor;
-    //     default         : mpuDataBus = 8'hff;
-    //   endcase
-    // end else begin
-    //   mpuDataBus = 8'bZ;
-    // end
   end
 
   always_ff @(negedge mpuRegisterWriteRequest or posedge reset) begin
@@ -187,12 +166,9 @@ module MCUInterfaceTB;
 		.memoryXCoord(memoryXCoord),
 		.memoryYCoord(memoryYCoord),
 
-		.memoryReadRequest(memoryReadRequest),
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryWriteData(memoryWriteData),
 
-		.memoryReadData(memoryReadData),
-		.memoryReadComplete(memoryReadComplete),
 		.memoryWriteComplete(memoryWriteComplete),
 
 		.mpuChipSelect(mpuChipSelect),

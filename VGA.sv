@@ -80,12 +80,9 @@ module VGA(
 		.memoryXCoord(memoryXCoord),
 		.memoryYCoord(memoryYCoord),
 
-		.memoryReadRequest(memoryReadRequest),
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryWriteData(memoryWriteData),
 
-		.memoryReadData(memoryReadData),
-		.memoryReadComplete(memoryReadComplete),
 		.memoryWriteComplete(memoryWriteComplete),
 
 		.mpuChipSelect(mpuChipSelect),
@@ -93,26 +90,6 @@ module VGA(
 		.mpuRegisterSelect(mpuRegisterSelect),
 		.mpuDataBus(mpuData)
 	);
-
-	// logic [8:0] xx;
-	// logic [7:0] yy;
-
-	// always_ff @(posedge clock) begin
-  //   if (memoryWriteRequest) begin
-  //     memoryWriteRequest <= ~memoryWriteComplete;
-  //   end else begin
-	// 		memoryWriteRequest <= 1;
-	// 		memoryXCoord <= xx;
-	// 		memoryYCoord <= yy;
-	// 		memoryWriteData <= yy[7:0];
-			
-	// 		if (xx == 319) begin
-	// 			xx <= 0;
-	// 			yy <= yy == 239 ? 1'b0 : yy + 1'b1;
-	// 		end else
-	// 			xx <= xx + 1'b1;
-	// 	end
-	// end
 
 endmodule
 
