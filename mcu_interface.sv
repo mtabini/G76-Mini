@@ -25,10 +25,11 @@ module MCUInterface(
     REGISTER_AUTOBOX_SET          = 4;
 
   parameter
-    AUTOBOX_X_START_LOW           = 0,
-    AUTOBOX_X_START_HIGH          = 1,
-    AUTOBOX_X_STOP_LOW            = 2,
-    AUTOBOX_X_STOP_HIGH           = 3;
+    AUTOBOX_SETUP_IDLE            = 0,
+    AUTOBOX_SETUP_X_START_LOW     = 1,
+    AUTOBOX_SETUP_X_START_HIGH    = 2,
+    AUTOBOX_SETUP_X_STOP_LOW      = 3,
+    AUTOBOX_SETUP_X_STOP_HIGH     = 4;
 
 
   logic       mpuRegisterWriteRequest;
@@ -38,13 +39,34 @@ module MCUInterface(
   logic [7:0] mpuYCoord;
   logic [7:0] mpuPixelColor;
 
+  logic [8:0] mpuAutoboxXStart;
+  logic [8:0] mpuAutoboxXStop;
+  logic [2:0] mpuAutoboxSetupState;
+  logic [2:0] mpuAutoboxSetupStateNext;
+  logic       mpuAutoboxSetup;
+  logic       mpuUseAutobox;
+  logic       mpuUseAutoboxRequest;
+
   logic [2:0] pixelWriteRequestSync;
   logic       doWrite;
+  logic [1:0] initializeAutobox;
 
 
   always_comb begin
+    mpuUseAutoboxRequest = mpuDataBus[0];
+    mpuAutoboxSetup = mpuAutoboxSetupState != AUTOBOX_SETUP_IDLE;
+
     mpuRegisterWriteRequest = mpuChipSelect && !mpuWriteEnable;
-    mpuPixelWriteRequest = mpuRegisterWriteRequest && (mpuRegisterSelect == REGISTER_DATA);
+    mpuPixelWriteRequest = mpuRegisterWriteRequest && !mpuAutoboxSetup && (mpuRegisterSelect == REGISTER_DATA);
+
+    case (mpuAutoboxSetupState)
+      AUTOBOX_SETUP_IDLE          : mpuAutoboxSetupStateNext = AUTOBOX_SETUP_IDLE;
+      AUTOBOX_SETUP_X_START_LOW   : mpuAutoboxSetupStateNext = AUTOBOX_SETUP_X_START_HIGH;
+      AUTOBOX_SETUP_X_START_HIGH  : mpuAutoboxSetupStateNext = AUTOBOX_SETUP_X_STOP_LOW;
+      AUTOBOX_SETUP_X_STOP_LOW    : mpuAutoboxSetupStateNext = AUTOBOX_SETUP_X_STOP_HIGH;
+      AUTOBOX_SETUP_X_STOP_HIGH   : mpuAutoboxSetupStateNext = AUTOBOX_SETUP_IDLE;
+      default                     : mpuAutoboxSetupStateNext = AUTOBOX_SETUP_IDLE;
+    endcase
   end
 
   always_ff @(negedge mpuRegisterWriteRequest or posedge reset) begin
@@ -54,10 +76,37 @@ module MCUInterface(
       mpuPixelColor <= 0;
     end else begin
       case (mpuRegisterSelect)
-        REGISTER_X_LOW  : mpuXCoord[7:0] <= mpuDataBus;
-        REGISTER_X_HIGH : mpuXCoord[8] <= mpuDataBus[0];
-        REGISTER_Y      : mpuYCoord <= mpuDataBus;
-        REGISTER_DATA   : mpuPixelColor <= mpuDataBus;
+        REGISTER_X_LOW        : mpuXCoord[7:0] <= mpuDataBus;
+        REGISTER_X_HIGH       : mpuXCoord[8] <= mpuDataBus[0];
+        REGISTER_Y            : mpuYCoord <= mpuDataBus;
+        REGISTER_DATA         : begin
+          initializeAutobox <= { initializeAutobox[0] , 1'b0 };
+
+          if (mpuAutoboxSetup) begin
+            case (mpuAutoboxSetupState) 
+              AUTOBOX_SETUP_X_START_LOW   : mpuAutoboxXStart[7:0] <= mpuDataBus;
+              AUTOBOX_SETUP_X_START_HIGH  : mpuAutoboxXStart[8] <= mpuDataBus[0];
+              AUTOBOX_SETUP_X_STOP_LOW    : mpuAutoboxXStop[7:0] <= mpuDataBus;
+              AUTOBOX_SETUP_X_STOP_HIGH   : begin
+                mpuAutoboxXStop[8] <= mpuDataBus[0];
+
+                mpuXCoord <= mpuAutoboxXStart;
+                initializeAutobox <= 2'b01;
+              end
+            endcase
+
+            mpuAutoboxSetupState <= mpuAutoboxSetupStateNext;
+          end else begin
+            mpuPixelColor <= mpuDataBus;            
+          end
+        end
+        REGISTER_AUTOBOX_SET  : begin
+          mpuUseAutobox <= mpuUseAutoboxRequest;
+
+          if (mpuUseAutoboxRequest) begin
+            mpuAutoboxSetupState <= AUTOBOX_SETUP_X_START_LOW;
+          end
+        end
       endcase
     end
   end
@@ -80,8 +129,23 @@ module MCUInterface(
       memoryYCoord <= 0;
       memoryWriteData <= 0;
     end else begin
-      memoryXCoord <= mpuXCoord;
-      memoryYCoord <= mpuYCoord;
+      if (mpuUseAutobox) begin
+        if (initializeAutobox) begin
+          memoryXCoord <= mpuXCoord;
+          memoryYCoord <= mpuYCoord;
+        end else begin
+          if (memoryXCoord >= mpuAutoboxXStop) begin
+            memoryXCoord <= mpuAutoboxXStart;
+            memoryYCoord <= memoryYCoord + 1'b1;
+          end else begin
+            memoryXCoord <= memoryXCoord + 1'b1;
+          end
+        end
+      end else begin
+        memoryXCoord <= mpuXCoord;
+        memoryYCoord <= mpuYCoord;
+      end
+
       memoryWriteData <= mpuPixelColor;
     end
   end
