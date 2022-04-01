@@ -16,8 +16,6 @@ module VGA(
   inout  [7:0]    mpuData
 );
 
-  logic  [2:0]    currentState;
-
 	logic  [16:0]   videoAddress;
 	logic  [7:0]		videoData;
 	logic           videoDataReady;
@@ -36,7 +34,6 @@ module VGA(
 
 	MemoryManager memoryManager(
 		.clock(clock),
-		.currentState(currentState),
 
 		.videoAddress(videoAddress),
 		.videoData(videoData),

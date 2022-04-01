@@ -1,7 +1,6 @@
 module MemoryManager (
   input               reset,
   input               clock,
-  output logic [2:0]  currentState,
 
   input [16:0]        videoAddress,
 
@@ -30,6 +29,7 @@ module MemoryManager (
   `include "clock_phases.sv"
 
 
+  logic [2:0]   currentState;
   logic  [2:0]  nextState;
   logic         memoryWriteStarted;
 
@@ -142,7 +142,6 @@ module MemoryManagerTB;
 
   logic             reset;
   logic             clock;
-  logic  [2:0]      currentState;
 
   logic  [8:0]      videoXCoord;
   logic  [7:0]      videoYCoord;
@@ -174,7 +173,6 @@ module MemoryManagerTB;
   MemoryManager memoryManagerDUT(
     .clock(clock),
     .reset(reset),
-    .currentState(currentState),
 
     .videoXCoord(videoXCoord),
     .videoYCoord(videoYCoord),
@@ -203,7 +201,6 @@ module MemoryManagerTB;
 	VideoOutput videoOutput(
     .reset(reset),
 		.clock(clock),
-		.currentState(currentState),
 
     .videoAddress(videoAddress),
 		.videoData(videoData),
