@@ -18,8 +18,7 @@ module VGA(
 
   logic  [2:0]    currentState;
 
-  logic  [8:0]    videoXCoord;
-  logic  [7:0]    videoYCoord;
+	logic  [16:0]   videoAddress;
 	logic  [7:0]		videoData;
 	logic           videoDataReady;
 
@@ -39,8 +38,7 @@ module VGA(
 		.clock(clock),
 		.currentState(currentState),
 
-		.videoXCoord(videoXCoord),
-		.videoYCoord(videoYCoord),
+		.videoAddress(videoAddress),
 		.videoData(videoData),
 		.videoDataReady(videoDataReady),
 
@@ -63,8 +61,7 @@ module VGA(
 		.clock(clock),
 		.currentState(currentState),
 
-		.xCoord(videoXCoord),
-		.yCoord(videoYCoord),
+		.videoAddress(videoAddress),
 		.videoData(videoData),
 		.videoDataReady(videoDataReady),
 

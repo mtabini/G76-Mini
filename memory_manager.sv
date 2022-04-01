@@ -3,8 +3,7 @@ module MemoryManager (
   input               clock,
   output logic [2:0]  currentState,
 
-  input  [8:0]        videoXCoord,
-  input  [7:0]        videoYCoord,
+  input [16:0]        videoAddress,
 
   output logic [7:0]  videoData,
   output logic        videoDataReady,
@@ -92,7 +91,7 @@ module MemoryManager (
   always_ff @(negedge clock) begin
     case(nextState)
       CLOCK_PHASE_IDLE,
-      CLOCK_PHASE_VIDEO_READ : ramAddress <= { videoYCoord, videoXCoord };
+      CLOCK_PHASE_VIDEO_READ : ramAddress <= videoAddress;
       CLOCK_PHASE_MEM_READ,   
       CLOCK_PHASE_MEM_WRITE  : ramAddress <= { memoryYCoord, memoryXCoord };
     endcase
@@ -206,8 +205,7 @@ module MemoryManagerTB;
 		.clock(clock),
 		.currentState(currentState),
 
-		.xCoord(videoXCoord),
-		.yCoord(videoYCoord),
+    .videoAddress(videoAddress),
 		.videoData(videoData),
 		.videoDataReady(videoDataReady),
 
