@@ -59,7 +59,6 @@ module VGA(
 
 	VideoOutput videoOutput(
 		.clock(clock),
-		.currentState(currentState),
 
 		.videoAddress(videoAddress),
 		.videoData(videoData),

@@ -1,7 +1,6 @@
 module VideoOutput (
   input                 reset,
   input                 clock,  
-  input  [2:0]          currentState,
 
   output logic [16:0]   videoAddress,
   input  logic [7:0]    videoData,
@@ -140,7 +139,6 @@ module VideoOutputTB;
   VideoOutput videoOutputDUT(
     .reset(reset),
     .clock(clock),
-    .currentState(currentState),
     
     .xCoord(videoXCoord),
     .yCoord(videoYCoord),
