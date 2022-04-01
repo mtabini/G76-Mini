@@ -20,8 +20,7 @@ module VGA(
 	logic  [7:0]		videoData;
 	logic           videoDataReady;
 
-  logic  [8:0]    memoryXCoord;
-  logic  [7:0]    memoryYCoord;
+  logic  [16:0]   memoryAddress;
 
   logic           memoryReadRequest;
   logic           memoryWriteRequest;
@@ -39,8 +38,7 @@ module VGA(
 		.videoData(videoData),
 		.videoDataReady(videoDataReady),
 
-		.memoryXCoord(memoryXCoord),
-		.memoryYCoord(memoryYCoord),
+		.memoryAddress(memoryAddress),
 		.memoryReadRequest(memoryReadRequest),
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryReadData(memoryReadData),
@@ -70,9 +68,7 @@ module VGA(
 	MCUInterface mpuInterface(
 		.clock(clock),
 
-		.memoryXCoord(memoryXCoord),
-		.memoryYCoord(memoryYCoord),
-
+		.memoryAddress(memoryAddress),
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryWriteData(memoryWriteData),
 

@@ -2,9 +2,7 @@ module MCUInterface(
   input                 reset,
   input                 clock,
 
-  output logic [8:0]    memoryXCoord,
-  output logic [7:0]    memoryYCoord,
-
+  output logic [16:0]   memoryAddress,
   output logic          memoryWriteRequest,
   output logic [7:0]    memoryWriteData,  
 
@@ -18,17 +16,16 @@ module MCUInterface(
 
 
   parameter
-    REGISTER_X_LOW                = 0,
-    REGISTER_X_HIGH               = 1,
-    REGISTER_Y                    = 2,
+    REGISTER_A_LOW                = 0,
+    REGISTER_A_MID                = 1,
+    REGISTER_A_HIGH               = 2,
     REGISTER_DATA                 = 3;
 
-  logic       mpuRegisterWriteRequest;
-  logic       mpuPixelWriteRequest;
+  logic        mpuRegisterWriteRequest;
+  logic        mpuPixelWriteRequest;
 
-  logic [8:0] mpuXCoord;
-  logic [7:0] mpuYCoord;
-  logic [7:0] mpuPixelColor;
+  logic [16:0] mpuAddress;
+  logic [7:0]  mpuPixelColor;
 
   logic [2:0] pixelWriteRequestSync;
   logic       doWrite;
@@ -41,14 +38,13 @@ module MCUInterface(
 
   always_ff @(negedge mpuRegisterWriteRequest or posedge reset) begin
     if (reset) begin
-      mpuXCoord <= 0;
-      mpuYCoord <= 0;
+      mpuAddress <= 0;
       mpuPixelColor <= 0;
     end else begin
       case (mpuRegisterSelect)
-        REGISTER_X_LOW        : mpuXCoord[7:0] <= mpuDataBus;
-        REGISTER_X_HIGH       : mpuXCoord[8] <= mpuDataBus[0];
-        REGISTER_Y            : mpuYCoord <= mpuDataBus;
+        REGISTER_A_LOW        : mpuAddress[7:0] <= mpuDataBus;
+        REGISTER_A_MID        : mpuAddress[15:8] <= mpuDataBus;
+        REGISTER_A_HIGH       : mpuAddress[16] <= mpuDataBus[0];
         REGISTER_DATA         : mpuPixelColor <= mpuDataBus;            
       endcase
     end
@@ -68,12 +64,10 @@ module MCUInterface(
 
   always_ff @(posedge doWrite or posedge reset) begin
     if (reset) begin
-      memoryXCoord <= 0;
-      memoryYCoord <= 0;
+      memoryAddress <= 0;
       memoryWriteData <= 0;
     end else begin
-      memoryXCoord <= mpuXCoord;
-      memoryYCoord <= mpuYCoord;
+      memoryAddress <= mpuAddress;
       memoryWriteData <= mpuPixelColor;
     end
   end
@@ -99,13 +93,11 @@ module MCUInterfaceTB;
 
   logic  [2:0]   currentState;
 
-  logic  [8:0]   videoXCoord;
-  logic  [7:0]   videoYCoord;
+  logic  [8:0]   videoAddress;
 	logic  [7:0]	 videoData;
 	logic          videoDataReady;
 
-  logic [8:0]    memoryXCoord;
-  logic [7:0]    memoryYCoord;
+  logic [16:0]   memoryAddress;
 
   logic          memoryReadRequest;
   logic          memoryWriteRequest;
@@ -131,13 +123,11 @@ module MCUInterfaceTB;
 		.clock(clock),
 		.currentState(currentState),
 
-		.videoXCoord(videoXCoord),
-		.videoYCoord(videoYCoord),
+		.videoAddress(videoAddress),
 		.videoData(videoData),
 		.videoDataReady(videoDataReady),
 
-		.memoryXCoord(memoryXCoord),
-		.memoryYCoord(memoryYCoord),
+		.memoryAddress(memoryAddress),
 		.memoryReadRequest(memoryReadRequest),
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryReadData(memoryReadData),
@@ -155,8 +145,7 @@ module MCUInterfaceTB;
     .reset(reset),
 		.clock(clock),
 
-		.memoryXCoord(memoryXCoord),
-		.memoryYCoord(memoryYCoord),
+		.memoryAddress(memoryAddress),
 
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryWriteData(memoryWriteData),

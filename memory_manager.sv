@@ -7,8 +7,7 @@ module MemoryManager (
   output logic [7:0]  videoData,
   output logic        videoDataReady,
 
-  input  [8:0]        memoryXCoord,
-  input  [7:0]        memoryYCoord,
+  input  [16:0]       memoryAddress,
 
   input               memoryReadRequest,
   input               memoryWriteRequest,
@@ -25,7 +24,6 @@ module MemoryManager (
   output logic        ramWriteEnable
 );
 
-
   parameter
     STATE_IDLE                = 0,
     STATE_VIDEO_READ          = 1,
@@ -34,13 +32,9 @@ module MemoryManager (
     STATE_NOP                 = 4,
     STATE_COMPLETE            = 5;
 
-
   logic [2:0]   currentState;
   logic  [2:0]  nextState;
   logic         memoryWriteStarted;
-
-
-  assign ramData = (memoryWriteStarted || memoryWriteComplete) ? memoryWriteData : 8'bZ;
 
   always_comb begin
     case (currentState)
@@ -99,9 +93,11 @@ module MemoryManager (
       STATE_IDLE,
       STATE_VIDEO_READ : ramAddress <= videoAddress;
       STATE_MEM_READ,   
-      STATE_MEM_WRITE  : ramAddress <= { memoryYCoord, memoryXCoord };
+      STATE_MEM_WRITE  : ramAddress <= memoryAddress;
     endcase
   end
+
+  assign ramData = (memoryWriteStarted || memoryWriteComplete) ? memoryWriteData : 8'bZ;
 
   always_ff @(posedge clock) begin
     if (reset) begin
@@ -149,9 +145,7 @@ module MemoryManagerTB;
   logic             reset;
   logic             clock;
 
-  logic  [8:0]      videoXCoord;
-  logic  [7:0]      videoYCoord;
-
+  logic  [16:0]     videoAddress;
   logic  [7:0]      videoData;
   logic             videoDataReady;
 
@@ -159,9 +153,7 @@ module MemoryManagerTB;
   logic             vSync;
   logic  [7:0]      videoOutputData;
 
-  logic  [8:0]      memoryXCoord;
-  logic  [7:0]      memoryYCoord;
-
+  logic  [16:0]     memoryAddress;
   logic             memoryReadRequest;
   logic             memoryWriteRequest;
   logic  [7:0]      memoryWriteData;  
@@ -180,15 +172,11 @@ module MemoryManagerTB;
     .clock(clock),
     .reset(reset),
 
-    .videoXCoord(videoXCoord),
-    .videoYCoord(videoYCoord),
-
+    .videoAddress(videoAddress),
     .videoData(videoData),
     .videoDataReady(videoDataReady),
 
-    .memoryXCoord(memoryXCoord),
-    .memoryYCoord(memoryYCoord),
-
+    .memoryAddress(memoryAddress),
     .memoryReadRequest(memoryReadRequest),
     .memoryWriteRequest(memoryWriteRequest),
     .memoryWriteData(memoryWriteData),
@@ -233,6 +221,12 @@ module MemoryManagerTB;
 	logic [8:0] xx;
 	logic [7:0] yy;
 
+  CoordinateTranslator coordinateTranslator(
+    .xCoord(xx),
+    .yCoord(yy),
+    .ramAddress(memoryAddress)
+  );
+
 	always_ff @(posedge clock) begin
     if (reset) begin
       memoryWriteRequest <= 0;
@@ -244,8 +238,7 @@ module MemoryManagerTB;
         memoryWriteRequest <= ~memoryWriteComplete;
       end else begin
         memoryWriteRequest <= 1;
-        memoryXCoord <= xx;
-        memoryYCoord <= yy;
+        memoryAddress <= { yy, xx };
         memoryWriteData <= xx[7:0];
         
         if (xx == 319) begin
