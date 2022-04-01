@@ -34,9 +34,6 @@ module VideoOutput (
   parameter V_LAST_POSITION       = V_SYNC_PULSE_START + V_SYNC_PULSE + V_BACK_PORCH - 1;
 
 
-  `include "clock_phases.sv"
-
-
   logic [9:0]     xAddr;
   logic [8:0]     yAddr;
 

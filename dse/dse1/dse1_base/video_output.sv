@@ -15,8 +15,6 @@ module VideoOutput (
   output logic            vSync
 );
 
-  `include "clock_phases.sv"
-
 
   parameter H_VISIBLE_AREA        = 10'd640;
   parameter H_FRONT_PORCH         = 10'd 20;  // Originally 16, cheat a little

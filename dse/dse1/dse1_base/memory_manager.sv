@@ -19,8 +19,6 @@ module MemoryManager(
 );
 
 
-  `include "clock_phases.sv"
-
   logic [8:0]     nextXCoord;
   logic           writePending;
 

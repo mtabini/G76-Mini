@@ -26,7 +26,13 @@ module MemoryManager (
 );
 
 
-  `include "clock_phases.sv"
+  parameter
+    STATE_IDLE                = 0,
+    STATE_VIDEO_READ          = 1,
+    STATE_MEM_READ            = 2,
+    STATE_MEM_WRITE           = 3,
+    STATE_NOP                 = 4,
+    STATE_COMPLETE            = 5;
 
 
   logic [2:0]   currentState;
@@ -38,19 +44,19 @@ module MemoryManager (
 
   always_comb begin
     case (currentState)
-        CLOCK_PHASE_IDLE:                                     nextState = CLOCK_PHASE_VIDEO_READ;
+        STATE_IDLE:                                         nextState = STATE_VIDEO_READ;
 
-        CLOCK_PHASE_VIDEO_READ:       if (memoryWriteRequest) nextState = CLOCK_PHASE_MEM_WRITE;
-                                 else if (memoryReadRequest)  nextState = CLOCK_PHASE_MEM_READ;
-                                 else                         nextState = CLOCK_PHASE_NOP;
+        STATE_VIDEO_READ:       if (memoryWriteRequest)     nextState = STATE_MEM_WRITE;
+                                else if (memoryReadRequest) nextState = STATE_MEM_READ;
+                                else                        nextState = STATE_NOP;
 
-        CLOCK_PHASE_MEM_WRITE:                                nextState = CLOCK_PHASE_COMPLETE;
-        CLOCK_PHASE_MEM_READ:                                 nextState = CLOCK_PHASE_COMPLETE;
-        CLOCK_PHASE_NOP:                                      nextState = CLOCK_PHASE_COMPLETE;
+        STATE_MEM_WRITE:                                    nextState = STATE_COMPLETE;
+        STATE_MEM_READ:                                     nextState = STATE_COMPLETE;
+        STATE_NOP:                                          nextState = STATE_COMPLETE;
 
-        CLOCK_PHASE_COMPLETE:                                 nextState = CLOCK_PHASE_IDLE;
+        STATE_COMPLETE:                                     nextState = STATE_IDLE;
         
-        default:                                              nextState = CLOCK_PHASE_IDLE;
+        default:                                            nextState = STATE_IDLE;
     endcase
   end
 
@@ -59,11 +65,11 @@ module MemoryManager (
       memoryWriteComplete <= 0;
       memoryWriteStarted <= 0;
     end else begin
-      if (memoryWriteRequest && (nextState == CLOCK_PHASE_MEM_WRITE)) begin
+      if (memoryWriteRequest && (nextState == STATE_MEM_WRITE)) begin
         memoryWriteStarted <= 1;
       end
 
-      if (memoryWriteStarted && (nextState == CLOCK_PHASE_COMPLETE)) begin
+      if (memoryWriteStarted && (nextState == STATE_COMPLETE)) begin
         memoryWriteComplete <= 1;
         memoryWriteStarted <= 0;
       end else begin
@@ -76,7 +82,7 @@ module MemoryManager (
     if (reset) begin
       memoryReadComplete <= 0;
     end else begin
-      memoryReadComplete <= memoryReadRequest && (nextState == CLOCK_PHASE_COMPLETE);
+      memoryReadComplete <= memoryReadRequest && (nextState == STATE_COMPLETE);
     end
   end
 
@@ -90,10 +96,10 @@ module MemoryManager (
 
   always_ff @(negedge clock) begin
     case(nextState)
-      CLOCK_PHASE_IDLE,
-      CLOCK_PHASE_VIDEO_READ : ramAddress <= videoAddress;
-      CLOCK_PHASE_MEM_READ,   
-      CLOCK_PHASE_MEM_WRITE  : ramAddress <= { memoryYCoord, memoryXCoord };
+      STATE_IDLE,
+      STATE_VIDEO_READ : ramAddress <= videoAddress;
+      STATE_MEM_READ,   
+      STATE_MEM_WRITE  : ramAddress <= { memoryYCoord, memoryXCoord };
     endcase
   end
 
@@ -101,7 +107,7 @@ module MemoryManager (
     if (reset) begin
       ramOutputEnable <= 1;
     end else begin
-      ramOutputEnable <= ~(nextState == CLOCK_PHASE_VIDEO_READ || nextState == CLOCK_PHASE_MEM_READ);
+      ramOutputEnable <= ~(nextState == STATE_VIDEO_READ || nextState == STATE_MEM_READ);
     end
   end
 
@@ -109,7 +115,7 @@ module MemoryManager (
     if (reset) begin
       ramWriteEnable <= 1;
     end else begin
-      ramWriteEnable <= ~(nextState == CLOCK_PHASE_MEM_WRITE);
+      ramWriteEnable <= ~(nextState == STATE_MEM_WRITE);
     end
   end
 
@@ -119,8 +125,8 @@ module MemoryManager (
       memoryReadData <= 0;
     end else begin
       case (currentState)
-        CLOCK_PHASE_VIDEO_READ : videoData <= ramData;
-        CLOCK_PHASE_MEM_READ   : memoryReadData <= ramData;
+        STATE_VIDEO_READ : videoData <= ramData;
+        STATE_MEM_READ   : memoryReadData <= ramData;
       endcase
     end    
   end
@@ -129,9 +135,9 @@ module MemoryManager (
     if (reset) begin
       videoDataReady <= 0;
     end else begin
-      videoDataReady <= (currentState == CLOCK_PHASE_MEM_READ ||
-                        currentState == CLOCK_PHASE_MEM_WRITE ||
-                        currentState == CLOCK_PHASE_NOP);
+      videoDataReady <= (currentState == STATE_MEM_READ ||
+                        currentState == STATE_MEM_WRITE ||
+                        currentState == STATE_NOP);
     end
   end
 
