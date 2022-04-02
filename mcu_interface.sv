@@ -29,7 +29,6 @@ module MCUInterface(
 
   logic        mpuRegisterWriteRequest;
   logic [1:0]  mpuRegisterWriteRequestDelay;
-  logic        mpuRegisterReadRequest;
   logic        mpuPixelWriteRequest;
 
   logic [16:0] mpuAddress;
@@ -45,7 +44,6 @@ module MCUInterface(
 
   always_comb begin
     mpuRegisterWriteRequest = mpuChipSelect && !mpuWriteEnable;
-    mpuRegisterReadRequest = mpuChipSelect && mpuWriteEnable;
     mpuPixelWriteRequest = mpuRegisterWriteRequestDelay[1] && (mpuRegisterSelect == REGISTER_DATA);
 
     mpuControlXAutoincrement = mpuControl[CONTROL_X_AUTOINCREMENT];
