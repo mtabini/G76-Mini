@@ -34,9 +34,7 @@ module MCUInterface(
   logic [16:0] mpuAddress;
   logic [16:0] mpuAddressNext;
   logic [7:0]  mpuPixelColor;
-  logic [7:0]  mpuControl;
-
-  logic mpuControlXAutoincrement;
+  logic [7:0]  mpuXIncrement;
 
   logic [2:0] pixelWriteRequestSync;
   logic       doWrite;
@@ -45,8 +43,6 @@ module MCUInterface(
   always_comb begin
     mpuRegisterWriteRequest = mpuChipSelect && !mpuWriteEnable;
     mpuPixelWriteRequest = mpuRegisterWriteRequestDelay[1] && (mpuRegisterSelect == REGISTER_DATA);
-
-    mpuControlXAutoincrement = mpuControl[CONTROL_X_AUTOINCREMENT];
   end
 
   always_ff @(posedge clock) begin
@@ -63,12 +59,9 @@ module MCUInterface(
         REGISTER_DATA         : begin
           mpuPixelColor <= mpuDataBus;
           mpuAddress <= mpuAddressNext;
-
-          if (mpuControlXAutoincrement) begin
-            mpuAddressNext <= mpuAddressNext + 1'b1;
-          end
+          mpuAddressNext <= mpuAddressNext + mpuXIncrement;
         end
-        REGISTER_CONTROL      : mpuControl <= mpuDataBus;
+        REGISTER_CONTROL      : mpuXIncrement <= mpuDataBus;
       endcase
     end
   end
