@@ -17,10 +17,14 @@ module MCUInterface(
 
 
   parameter
-    REGISTER_X_LOW  = 0,
-    REGISTER_X_HIGH = 1,
-    REGISTER_Y      = 2,
-    REGISTER_DATA   = 3;
+    REGISTER_X_LOW   = 0,
+    REGISTER_X_HIGH  = 1,
+    REGISTER_Y       = 2,
+    REGISTER_DATA    = 3,
+    REGISTER_CONTROL = 4;
+
+  parameter
+    CONTROL_X_AUTOINCREMENT   = 0;
 
 
   logic        mpuRegisterWriteRequest;
@@ -29,7 +33,11 @@ module MCUInterface(
   logic        mpuPixelWriteRequest;
 
   logic [16:0] mpuAddress;
+  logic [16:0] mpuAddressNext;
   logic [7:0]  mpuPixelColor;
+  logic [7:0]  mpuControl;
+
+  logic mpuControlXAutoincrement;
 
   logic [2:0] pixelWriteRequestSync;
   logic       doWrite;
@@ -38,7 +46,9 @@ module MCUInterface(
   always_comb begin
     mpuRegisterWriteRequest = mpuChipSelect && !mpuWriteEnable;
     mpuRegisterReadRequest = mpuChipSelect && mpuWriteEnable;
-    mpuPixelWriteRequest = mpuRegisterWriteRequest && (mpuRegisterSelect == REGISTER_DATA);
+    mpuPixelWriteRequest = mpuRegisterWriteRequestDelay[1] && (mpuRegisterSelect == REGISTER_DATA);
+
+    mpuControlXAutoincrement = mpuControl[CONTROL_X_AUTOINCREMENT];
   end
 
   always_ff @(posedge clock) begin
@@ -47,12 +57,20 @@ module MCUInterface(
     if (reset) begin
       mpuAddress <= 0;
       mpuPixelColor <= 0;
-    end else if (mpuRegisterWriteRequestDelay[1]) begin
+    end else if (mpuRegisterWriteRequestDelay == 2'b10) begin
       case (mpuRegisterSelect)
-        REGISTER_X_LOW        : mpuAddress[7:0] <= mpuDataBus;
-        REGISTER_X_HIGH       : mpuAddress[8] <= mpuDataBus[0];
-        REGISTER_Y            : mpuAddress[16:9] <= mpuDataBus;
-        REGISTER_DATA         : mpuPixelColor <= mpuDataBus;            
+        REGISTER_X_LOW        : mpuAddressNext[7:0] <= mpuDataBus;
+        REGISTER_X_HIGH       : mpuAddressNext[8] <= mpuDataBus[0];
+        REGISTER_Y            : mpuAddressNext[16:9] <= mpuDataBus;
+        REGISTER_DATA         : begin
+          mpuPixelColor <= mpuDataBus;
+          mpuAddress <= mpuAddressNext;
+
+          if (mpuControlXAutoincrement) begin
+            mpuAddressNext <= mpuAddressNext + 1'b1;
+          end
+        end
+        REGISTER_CONTROL      : mpuControl <= mpuDataBus;
       endcase
     end
   end
