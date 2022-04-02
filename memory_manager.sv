@@ -2,23 +2,24 @@ module MemoryManager (
   input               reset,
   input               clock,
 
-  input [16:0]        videoAddress,
+  input        [16:0] videoAddress,
+  input        [16:0] videoAddressOffset,
 
-  output logic [7:0]  videoData,
+  output logic  [7:0] videoData,
   output logic        videoDataReady,
 
-  input  [16:0]       memoryAddress,
+  input        [16:0] memoryAddress,
 
   input               memoryReadRequest,
   input               memoryWriteRequest,
-  input  [7:0]        memoryWriteData,  
+  input         [7:0] memoryWriteData,  
   
-  output logic [7:0]  memoryReadData,
+  output logic  [7:0] memoryReadData,
   output logic        memoryReadComplete,
   output logic        memoryWriteComplete,
 
   output logic [16:0] ramAddress,
-  inout [7:0]         ramData,
+  inout         [7:0] ramData,
 
   output logic        ramOutputEnable,
   output logic        ramWriteEnable
@@ -33,7 +34,7 @@ module MemoryManager (
     STATE_COMPLETE            = 5;
 
   logic [2:0]   currentState;
-  logic  [2:0]  nextState;
+  logic [2:0]   nextState;
   logic         memoryWriteStarted;
 
   always_comb begin
@@ -91,9 +92,9 @@ module MemoryManager (
   always_ff @(negedge clock) begin
     case(nextState)
       STATE_IDLE,
-      STATE_VIDEO_READ : ramAddress <= videoAddress;
+      STATE_VIDEO_READ : ramAddress <= videoAddress + videoAddressOffset;
       STATE_MEM_READ,   
-      STATE_MEM_WRITE  : ramAddress <= memoryAddress;
+      STATE_MEM_WRITE  : ramAddress <= memoryAddress + videoAddressOffset;
     endcase
   end
 

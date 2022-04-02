@@ -2,6 +2,8 @@ module MCUInterface(
   input                 reset,
   input                 clock,
 
+  output logic [16:0]   videoAddressOffset,
+
   output logic [16:0]   memoryAddress,
   output logic          memoryWriteRequest,
   output logic [7:0]    memoryWriteData,  
@@ -21,7 +23,8 @@ module MCUInterface(
     REGISTER_X_HIGH       = 1,
     REGISTER_Y            = 2,
     REGISTER_DATA         = 3,
-    REGISTER_X_INCREMENT  = 4;
+    REGISTER_X_INCREMENT  = 4,
+    REGISTER_Y_OFFSET     = 5;
 
 
   logic        mpuRegisterWriteRequest;
@@ -59,6 +62,7 @@ module MCUInterface(
           mpuAddressNext <= mpuAddressNext + mpuXIncrement;
         end
         REGISTER_X_INCREMENT  : mpuXIncrement <= mpuDataBus;
+        REGISTER_Y_OFFSET     : videoAddressOffset <= mpuDataBus * 512;
       endcase
     end
   end

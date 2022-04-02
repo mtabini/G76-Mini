@@ -17,6 +17,7 @@ module VGA(
 );
 
 	logic  [16:0]   videoAddress;
+	logic  [16:0]   videoAddressOffset;
 	logic  [7:0]		videoData;
 	logic           videoDataReady;
 
@@ -35,6 +36,7 @@ module VGA(
 		.clock(clock),
 
 		.videoAddress(videoAddress),
+		.videoAddressOffset(videoAddressOffset),
 		.videoData(videoData),
 		.videoDataReady(videoDataReady),
 
@@ -67,6 +69,8 @@ module VGA(
 
 	MCUInterface mpuInterface(
 		.clock(clock),
+
+		.videoAddressOffset(videoAddressOffset),
 
 		.memoryAddress(memoryAddress),
 		.memoryWriteRequest(memoryWriteRequest),
