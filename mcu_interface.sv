@@ -17,14 +17,11 @@ module MCUInterface(
 
 
   parameter
-    REGISTER_X_LOW   = 0,
-    REGISTER_X_HIGH  = 1,
-    REGISTER_Y       = 2,
-    REGISTER_DATA    = 3,
-    REGISTER_CONTROL = 4;
-
-  parameter
-    CONTROL_X_AUTOINCREMENT   = 0;
+    REGISTER_X_LOW        = 0,
+    REGISTER_X_HIGH       = 1,
+    REGISTER_Y            = 2,
+    REGISTER_DATA         = 3,
+    REGISTER_X_INCREMENT  = 4;
 
 
   logic        mpuRegisterWriteRequest;
@@ -61,7 +58,7 @@ module MCUInterface(
           mpuAddress <= mpuAddressNext;
           mpuAddressNext <= mpuAddressNext + mpuXIncrement;
         end
-        REGISTER_CONTROL      : mpuXIncrement <= mpuDataBus;
+        REGISTER_X_INCREMENT  : mpuXIncrement <= mpuDataBus;
       endcase
     end
   end
