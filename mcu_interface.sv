@@ -17,10 +17,10 @@ module MCUInterface(
 
 
   parameter
-    REGISTER_A_LOW                = 0,
-    REGISTER_A_MID                = 1,
-    REGISTER_A_HIGH               = 2,
-    REGISTER_DATA                 = 3;
+    REGISTER_X_LOW  = 0,
+    REGISTER_X_HIGH = 1,
+    REGISTER_Y      = 2,
+    REGISTER_DATA   = 3;
 
 
   logic        mpuRegisterWriteRequest;
@@ -49,9 +49,9 @@ module MCUInterface(
       mpuPixelColor <= 0;
     end else if (mpuRegisterWriteRequestDelay[1]) begin
       case (mpuRegisterSelect)
-        REGISTER_A_LOW        : mpuAddress[7:0] <= mpuDataBus;
-        REGISTER_A_MID        : mpuAddress[15:8] <= mpuDataBus;
-        REGISTER_A_HIGH       : mpuAddress[16] <= mpuDataBus[0];
+        REGISTER_X_LOW        : mpuAddress[7:0] <= mpuDataBus;
+        REGISTER_X_HIGH       : mpuAddress[8] <= mpuDataBus[0];
+        REGISTER_Y            : mpuAddress[16:9] <= mpuDataBus;
         REGISTER_DATA         : mpuPixelColor <= mpuDataBus;            
       endcase
     end
