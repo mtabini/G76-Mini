@@ -82,18 +82,3 @@ module VGA(
 
 endmodule
 
-
-module VGATB;
-
-  logic      clock;
-  
-  initial begin
-    #1 clock = 0;
-    forever #1 clock = ~clock;
-  end
-  
-  VGA vga(
-    .clock(clock)
-  );
-  
-endmodule
