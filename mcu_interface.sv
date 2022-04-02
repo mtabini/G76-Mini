@@ -5,6 +5,7 @@ module MCUInterface(
   output logic [16:0]   memoryAddress,
   output logic          memoryWriteRequest,
   output logic [7:0]    memoryWriteData,  
+  input        [16:0]   memoryReadData,
 
   input                 memoryWriteComplete,
 
@@ -21,7 +22,10 @@ module MCUInterface(
     REGISTER_A_HIGH               = 2,
     REGISTER_DATA                 = 3;
 
+
   logic        mpuRegisterWriteRequest;
+  logic [1:0]  mpuRegisterWriteRequestDelay;
+  logic        mpuRegisterReadRequest;
   logic        mpuPixelWriteRequest;
 
   logic [16:0] mpuAddress;
@@ -33,14 +37,17 @@ module MCUInterface(
 
   always_comb begin
     mpuRegisterWriteRequest = mpuChipSelect && !mpuWriteEnable;
+    mpuRegisterReadRequest = mpuChipSelect && mpuWriteEnable;
     mpuPixelWriteRequest = mpuRegisterWriteRequest && (mpuRegisterSelect == REGISTER_DATA);
   end
 
-  always_ff @(negedge mpuRegisterWriteRequest or posedge reset) begin
+  always_ff @(posedge clock) begin
+    mpuRegisterWriteRequestDelay <= { mpuRegisterWriteRequestDelay[0], mpuRegisterWriteRequest };
+
     if (reset) begin
       mpuAddress <= 0;
       mpuPixelColor <= 0;
-    end else begin
+    end else if (mpuRegisterWriteRequestDelay[1]) begin
       case (mpuRegisterSelect)
         REGISTER_A_LOW        : mpuAddress[7:0] <= mpuDataBus;
         REGISTER_A_MID        : mpuAddress[15:8] <= mpuDataBus;
@@ -149,7 +156,7 @@ module MCUInterfaceTB;
 
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryWriteData(memoryWriteData),
-
+    .memoryReadData(memoryReadData),
 		.memoryWriteComplete(memoryWriteComplete),
 
 		.mpuChipSelect(mpuChipSelect),

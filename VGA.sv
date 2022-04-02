@@ -71,7 +71,7 @@ module VGA(
 		.memoryAddress(memoryAddress),
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryWriteData(memoryWriteData),
-
+		.memoryReadData(memoryReadData),
 		.memoryWriteComplete(memoryWriteComplete),
 
 		.mpuChipSelect(mpuChipSelect),
