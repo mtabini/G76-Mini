@@ -1,5 +1,7 @@
 # G76 Mini - A $10 VGA interface for retrocomputing
 
+!(https://raw.githubusercontent.com/mtabini/VGA/main/img/palette.jpeg?token=GHSAT0AAAAAABTFPRVWVDTGTBCIPOLTNXMKYSS7YUQ)
+
 The G76 Mini is a simple and easy to build VGA module for retrocomputing projects. It requires only a handful of inexpensive and easy-to-procure components and can be either integrated into SBC designs or as a standalone board that can interface with most 8-bit architectures (though it was built with the 6502 in mind). You can view a demo of the interface running [on YouTube](https://youtu.be/on7V5krxY_A).
 
 The hardware design uses the [Max II family](https://www.intel.com/content/dam/altera-www/global/zh_CN/pdfs/literature/hb/max2/max2_mii5v1_01.pdf) by Altera (now Intel), but the SystemVerilog code should be easily adaptable to other CPLDs or FPGAs, since it doesn't use any proprietary IP; when programmed on an EPM240 chip, which, while technically obsolete, can easily be obtained for around $2 on eBay or AliExpress, the design leaves around 10% of LUTs and 20 or so pins free for any additional glue logic you might need. With the added cost of SRAM and passives, the interface can be incorporated into an existing design for around $5, or built as a standalone board for around $10.
