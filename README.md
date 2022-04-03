@@ -1,9 +1,9 @@
-# G76 Mini - A $10 VGA interface for retrocomputing
+# G76 Mini - A $10 VGA interface for homebrew retrocomputing
 
 ![320x240 8BPP palette demo](https://raw.githubusercontent.com/mtabini/VGA/main/img/palette.jpeg?token=GHSAT0AAAAAABTFPRVWVDTGTBCIPOLTNXMKYSS7YUQ)
 ![640x240 4BPP “high res” palette demo (bonus 80-column text)](https://raw.githubusercontent.com/mtabini/VGA/main/img/palette_highres.jpeg?token=GHSAT0AAAAAABTFPRVXTZVHLHBZLEHUVRCAYSS745Q)
 
-The G76 Mini is a simple and inexpensive VGA module for retrocomputing projects. It requires only a handful of inexpensive and easy-to-procure components and can be either integrated into SBC designs or as a standalone board that can interface with most 8-bit architectures (though it was built with the 6502 in mind). You can view a demo of the interface running [on YouTube](https://youtu.be/on7V5krxY_A).
+The G76 Mini is a simple and inexpensive VGA module for homebrew retrocomputing projects. It requires only a handful of inexpensive and easy-to-procure components and can be either integrated into SBC designs or as a standalone board that can interface with most 8-bit architectures (though it was built with the 6502 in mind). You can view a demo of the interface running [on YouTube](https://youtu.be/on7V5krxY_A).
 
 The hardware design uses the [Max II family](https://www.intel.com/content/dam/altera-www/global/zh_CN/pdfs/literature/hb/max2/max2_mii5v1_01.pdf) by Altera (now Intel), but the SystemVerilog code should be easily portable to other CPLDs or FPGAs, since it doesn't use any proprietary IP; when programmed on an EPM240 chip, which, while technically obsolete, can easily be obtained for around $2 on eBay or AliExpress, the design leaves around 10% of LUTs and 20 or so pins free for any additional glue logic you might need. With the added cost of SRAM and passives, the interface can be incorporated into an existing design for around $5, or built as a standalone board for around $10.
 
@@ -17,8 +17,8 @@ The G76 Mini supports these features:
 - 320x240 resolution at 8BPP (RRRGGGBB), rendered as a 640x480 @ 60Hz standard VGA signal.
 - 640x240 resolution at 4BPP “high res” mode using a CGA-like palette, capable of 80x30 text (though you will have to implement the text rendering in software).
 - Hardware accelerate vertical scrolling (handy for text displays).
-- Self-incrementing X coordinate for fast transfer.
-- Active-low interrupt when entering the non-visible area of the screen.
+- Toggable self-incrementing X coordinate for faster data transfers.
+- Active-low interrupt when entering the non-visible area at the bottom of the screen.
 
 ### Features that almost made the cut
 
@@ -26,7 +26,9 @@ A main limitation of the system is that it is completely write-only, and data ca
 
 In addition, the design doesn't support tiling or sprites; there just isn't enough space for them in the EPM240. This is something that I eventually plan to add (possibly after some additional cleanup), but it will likely require more expensive hardware.
 
-Finally, it should be possible to rewrite the video rendering code to use the 640x400 @ 72Hz VGA mode, thus supporting 8PP throughout. I am not sure, however, that the design would still fit in an EPM240, and every monitor in my possession struggles to support that resolution, so I didn't really bother with it. An interesting alternative would be to still use 640x480 @ 60Hz, but only render 400 vertical lines through the judicious use of borders.
+It should be possible to rewrite the video rendering code to use the 640x400 @ 72Hz VGA mode, thus supporting 8PP even in high-res mode. I am not sure, however, that the design would still fit in an EPM240, and every monitor in my possession struggles to support that resolution, so I didn't really bother with it. An interesting alternative would be to still use 640x480 @ 60Hz, but only render 400 vertical lines through the judicious use of borders.
+
+Finally, there currently is no reset mechanism. This was an oversight (as witnessed by the fact that the individual modules kind-of support a reset signal) that I plan to revisit in the future.
 
 ## Programming guide
 
@@ -47,19 +49,19 @@ In order to write a single pixel, you first set the X and Y coordinates (in any 
 
 If Bit 0 of the Control register is set, the internal address pointer is incremented by 1 every time a new value is written to the Pixel Data register. This allows you to write entire rows of pixels without having to reset the coordinates every time. 
 
-Note that this increment is unaware of the system's internal memory layout; thus, if you are in high-res mode, the X coordinate is incremented by _two_ pixels with every write, and, if you exceed the horizontal resolution, you will have to write another 80 values to the Pixel Data register before ending up at the beginning of the next visible line.
+Note that the increment mechanism is unaware of the system's internal memory layout; thus, if you are in high-res mode, the X coordinate is incremented by _two_ pixels with every write, and, if you exceed the horizontal resolution, you will have to write another 80 values to the Pixel Data register before ending up at the beginning of the next visible line.
 
 ### Using hardware-accelerated Y scrolling
 
-Writing a value into the Y Offset register causes the display to be shifted down (that is, scroll up) by a corresponding number of lines. This feature is designed to aid in the implementation of text mode, since the G76 Mini doesn't support any text modes and re-rendering the entire screen would be exceedingly slow. Instead, when the cursor reaches the end of the screen, a new line of text can be rendered beyond the bottom of the display (i.e.: at row 240), and then the Y Offset register incremented by the pixel height of the font used.
+Writing a value into the Y Offset register causes the display to be shifted down (that is, scroll up) by a corresponding number of lines. This feature is designed to aid in the implementation of text displays, since the G76 Mini doesn't support any text modes and re-rendering the entire screen would be exceedingly slow. Instead, when the cursor reaches the end of the screen, a new line of text can be rendered beyond the bottom of the display (i.e.: at row 240), and then the Y Offset register incremented by the pixel height of the font used.
 
 Note that the Y coordinate register is _relative_ to the Y offset. That means that “Y coordinate 0” is always the top row of the _visible_ portion of the display, regardless of what the Y Offset register is set to.
 
 ### Using high-res mode
 
-When bit 1 of the Control register is set, the interface switches to “high res” mode, which displays 640x240 pixels at 4BPP; if you use an 8x8 pixel font, this allows you to display 80x30 text.
+When bit 1 of the Control register is set, the interface switches to “high res” mode, which displays 640x240 pixels at 4BPP; if you use an 8x8 pixel font, this allows you to display text at 80 columns by 30 rows.
 
-In this mode, each nibble describes a pixel, which is rendered using a palette that approximate the original 16-color CGA mode:
+In this mode, each nibble describes a pixel, which is rendered using a palette that approximates the original 16-color CGA mode:
 
 | Value | Color |
 | --- | --- |
@@ -80,7 +82,7 @@ In this mode, each nibble describes a pixel, which is rendered using a palette t
 | 14 | Yellow |
 | 15 | White |
 
-Note that the X coordinate register is unaware of the difference in resolution between standard and high-res modes; therefore, you can only really address two pixels at a time, and will always end up writing on an even coordinate by default (e.g.: writing a byte to “x coordinate 0” writes both pixels at `x=0` and `x=1`). This is caused by the fact that, internally, reading a byte value so that individual bits could be updated would be too time-intensive, and so I left it purposefully out of the design. It makes high-res mode much less useful for displaying images, though it is, of course, still possible to do so.
+Note that the X coordinate register is unaware of the difference in resolution between standard and high-res modes; therefore, you can only really address two pixels at a time, and will always end up writing on an even coordinate by default (e.g.: writing a byte to “x coordinate 0” writes both pixels at `x=0` and `x=1`). This is caused by the fact that, internally, reading a byte value so that individual bits could be updated would be too time-intensive, and so I left it purposefully out of the design. It makes high-res mode much less useful for dynamic display, though it is, of course, still possible to do so.
 
 ## Hardware interface
 
