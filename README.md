@@ -16,7 +16,7 @@ The G76 Mini supports these features:
 - Completely asynchronous operation; you should be able to just bitbang data into the registers at the typical speeds supported by most hobbyist retrocomputing projects.
 - 320x240 resolution at 8BPP (RRRGGGBB), rendered as a 640x480 @ 60Hz standard VGA signal.
 - 640x240 resolution at 4BPP “high res” mode using a CGA-like palette, capable of 80x30 text (though you will have to implement the text rendering in software).
-- Hardware accelerate vertical scrolling (handy for text displays).
+- Hardware accelerated vertical scrolling (handy for text displays).
 - Toggable self-incrementing X coordinate for faster data transfers.
 - Active-low interrupt when entering the non-visible area at the bottom of the screen.
 
