@@ -89,7 +89,7 @@ The interface operates at 3.3V and is **not 5V safe.** Interoperation with a 5V 
 
 ## Reference design
 
-I have included a [simple reference design](/reference_design/) for a standalone video card in the project (though please note that this is as yet untested—I have only wired up a prototype on perfboard, and am waiting for the PCBs to arrive from the manufacturer. So, as always, caveat emptor!). As you can see from [the schematic](/reference_design/schematic.pdf), the interface really only needs a handful of components and is quite simple, since it depends so heavily on the CPLD.
+I have included a [simple reference design](/reference_design/schematic.pdf) for a standalone video card in the project (though please note that this is as yet untested—I have only wired up a prototype on perfboard, and am waiting for the PCBs to arrive from the manufacturer. So, as always, caveat emptor!). As you can see from [the schematic](/reference_design/schematic.pdf), the interface really only needs a handful of components and is quite simple, since it depends so heavily on the CPLD.
 
 The VGA output is generated using a few resistors, and is of surprisingly good quality, especially if you stick with 1% tolerances. An R2R network might produce a more consistent result, and of course a DAC would be best, but it seemed overkill for a homebrew project.
 
