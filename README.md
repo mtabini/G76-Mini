@@ -1,6 +1,7 @@
 # G76 Mini - A $10 VGA interface for retrocomputing
 
-!(https://raw.githubusercontent.com/mtabini/VGA/main/img/palette.jpeg?token=GHSAT0AAAAAABTFPRVWVDTGTBCIPOLTNXMKYSS7YUQ)
+![320x240 8BPP palette demo](https://raw.githubusercontent.com/mtabini/VGA/main/img/palette.jpeg?token=GHSAT0AAAAAABTFPRVWVDTGTBCIPOLTNXMKYSS7YUQ)
+![640x240 4BPP “high res” palette demo (bonus 80-column text)](https://raw.githubusercontent.com/mtabini/VGA/main/img/palette_highres.jpeg?token=GHSAT0AAAAAABTFPRVXTZVHLHBZLEHUVRCAYSS745Q)
 
 The G76 Mini is a simple and easy to build VGA module for retrocomputing projects. It requires only a handful of inexpensive and easy-to-procure components and can be either integrated into SBC designs or as a standalone board that can interface with most 8-bit architectures (though it was built with the 6502 in mind). You can view a demo of the interface running [on YouTube](https://youtu.be/on7V5krxY_A).
 
