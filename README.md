@@ -22,7 +22,7 @@ The G76 Mini supports these features:
 
 ### Features that almost made the cut
 
-A main limitation of the system is that it is completely write-only, and data cannot be read back from its registers. This also implies that you cannot read the contents of the video RAM!
+A main limitation of the system is that it is write-only; data can be read back from the various registers, but it will not reflect the contents of the onboard video RAM.
 
 In addition, the design doesn't support tiling or sprites; there just isn't enough space for them in the EPM240. This is something that I eventually plan to add (possibly after some additional cleanup), but it will likely require more expensive hardware.
 
@@ -90,11 +90,17 @@ The hardware interface requires 8 data lines and 3 address lines to access the r
 
 Optionally, an IRQ line, active low, can be used to detect when the display raster enters the non-visible zone at the end of the screen; this enables synchronized rendering to avoid flickering.
 
-The interface operates at 3.3V and is **not 5V safe.** Interoperation with a 5V design should be possible using a level shifter like the [TXS0108E](https://www.ti.com/lit/ds/symlink/txs0108e.pdf?ts=1648989440598&ref_url=https%253A%252F%252Fwww.google.com%252F), or using a discrete shifter built from MOSFET transistors, but this is as yet untested.
+The interface operates at 3.3V and is **not 5V safe.** Interoperation with a 5V design should be possible using a level shifter, but this is as yet untested.
+
+## Interfacing considerations
+
+The G76 Mini reads data when the `MPU_CS` signal goes high (and, for write operations, when the `/MPU_WE` signal goes low). This makes it compatible with most 8-bit CPUs like the Z80 and 6502, so long as you provide the glue logic required to control the `MPU_CS` signal.
+
+On the latter, this means that you will need to qualify `MPU_CS` with the CPU's clock signal, because the 6502 doesn't place a valid address on the bus until the high part of the clock cycle. Thus, `MPU_CS` can only go high at the same time as the `PHI2` signal that provides the clock.
 
 ## Reference design
 
-I have included a [simple reference design](/reference_design/schematic.pdf) for a standalone video card in the project (though please note that this is as yet untested—I have only wired up a prototype on perfboard, and am waiting for the PCBs to arrive from the manufacturer. So, as always, caveat emptor!). As you can see from [the schematic](/reference_design/schematic.pdf), the interface really only needs a handful of components and is quite simple, since it depends so heavily on the CPLD.
+I have included a [simple reference design](/reference_design/schematic.pdf) ([B/W version](/reference_design/schematic_bw.pdf)) for a standalone video card in the project. As you can see from the schematic, the interface really only needs a handful of components and is quite simple, since it depends so heavily on the CPLD.
 
 The VGA output is generated using a few resistors, and is of surprisingly good quality, especially if you stick with 1% tolerances. An R2R network might produce a more consistent result, and of course a DAC would be best, but it seemed overkill for a homebrew project.
 
@@ -106,7 +112,7 @@ The Max II can be programmed using Altera's [USB Blaster](https://www.intel.com/
 
 The G76 Mini's SystemVerilog source can be compiled using Quartus II; you should be able to just open the [VGA320.qpf](./VGA320.qpf) project and, provided that you use the same pinout as I did, compile and write it to the hardware. 
 
-Diguring out how to actually connect the CPLD to your computer can be a frustrating experience; the Max II is officially obsolete, and supported only by older versions of Quartus. Unfortunately, these come with unsigned drivers that cannot be installed on Windows 10, leading to much confusion.
+Figuring out how to actually connect the CPLD to your computer can be a frustrating experience; the Max II is officially obsolete, and supported only by older versions of Quartus. Unfortunately, these come with unsigned drivers that cannot be installed on Windows 10, leading to much confusion.
 
 In the end, this process worked for me:
 
@@ -136,9 +142,7 @@ Note that MemoryManager includes functionality for random-access reads from the 
 
 The VideoOutput module is little more than a glorified counter; it simply keeps track of the raster position, issues the appropriate sync signals to the VGA interface, and ensures that the right pixel is being output at all times. Note that the system operates at a pixel clock 25MHz, which is _technically_ out of spec, as [the standard](http://tinyvga.com/vga-timing/640x480@60Hz) expects 25.175MHz. I suspect that most modern monitors will be fine with it (mine reports a 61Hz signal, but doesn't seem to care), but older CRTs may be unhappy and possibly even damaged by the signal. Please keep this in mind!
 
-Finally, MPUInterface spends most of its time waiting for input from the external bus; when it detects a falling edge on the Read/Write signal while Chip Select is high, it _waits a clock cycle_ and then reads the data. This means that the data bus must be valid for up to 20ns after Read/Write goes inactive in order for things to work properly. This is something that I arrived at experimentally, and I consider it a bug (though I'm not sure if it's a bug in the design, the external MPU, or both), probably caused by my inexperience with SystemVerilog.
-
-When it receives a request to write pixel data, MPUInterface raises a flag that is synchronized with the main clock; the the sync occurs, it creates a copy of the current status of all the registers and sends a write requests to MemoryManager. Thus, while a write should take around 60ns, it should be possible to start writing new data to the coordinate registers much sooner.
+When it receives a request to write pixel data, MPUInterface raises a flag that is synchronized with the main clock; when the sync occurs, the code sends a write requests to MemoryManager. Thus, while a write should take around 60ns, it should be possible to start writing new data to the coordinate registers much sooner. In my tests, the interface works flawlessly with a 6502 running at 13MHz (which is the fastest clock supported by my experimental computer--the G76 Mini may actually work at even faster speeds).
 
 ## Reporting bugs and contributing
 

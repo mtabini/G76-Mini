@@ -31,83 +31,75 @@ module MCUInterface(
     CONTROL_HIGH_RES_MODE     = 1;
 
 
-  logic        mpuRegisterWriteRequest;
-  logic [1:0]  mpuRegisterWriteRequestDelay;
-  logic        mpuPixelWriteRequest;
-  logic        mpuXIncrement;
+  logic        registerWriteRequest;
+  logic        registerReadRequest;
 
-  logic [16:0] mpuAddress;
-  logic [16:0] mpuAddressNext;
-  logic [7:0]  mpuPixelColor;
-  logic [7:0]  mpuControl;
+  logic [7:0]   dataRegister;
+  logic [7:0]   controlRegister;
 
-  logic [2:0] pixelWriteRequestSync;
-  logic       pixelWritePending;
+  logic         pixelWriteRequest;
+  logic [16:0]  pixelWriteAddress;
+  logic [16:0]  pixelWriteAddressNext;
 
+  logic         xIncrement;
 
   always_comb begin
-    mpuRegisterWriteRequest = mpuChipSelect && !mpuWriteEnable;
-    mpuPixelWriteRequest = mpuRegisterWriteRequestDelay[1] && (mpuRegisterSelect == REGISTER_DATA);
-    mpuXIncrement = mpuControl[CONTROL_X_AUTOINCREMENT];
-    videoHighResMode = mpuControl[CONTROL_HIGH_RES_MODE];
+    xIncrement = controlRegister[CONTROL_X_AUTOINCREMENT];
+    videoHighResMode = controlRegister[CONTROL_HIGH_RES_MODE];
   end
 
-  always_ff @(posedge clock) begin
-    mpuRegisterWriteRequestDelay <= { mpuRegisterWriteRequestDelay[0], mpuRegisterWriteRequest };
+  always_comb begin
+    registerWriteRequest = mpuChipSelect && !mpuWriteEnable;
+    registerReadRequest = mpuChipSelect && mpuWriteEnable;
 
-    if (reset) begin
-      mpuAddress <= 0;
-      mpuPixelColor <= 0;
-    end else if (mpuRegisterWriteRequestDelay == 2'b10) begin
+    if (registerReadRequest) begin
       case (mpuRegisterSelect)
-        REGISTER_X_LOW        : mpuAddressNext[7:0] <= mpuDataBus;
-        REGISTER_X_HIGH       : mpuAddressNext[8] <= mpuDataBus[0];
-        REGISTER_Y            : mpuAddressNext[16:9] <= mpuDataBus;
-        REGISTER_DATA         : begin
-          mpuPixelColor <= mpuDataBus;
-          mpuAddress <= mpuAddressNext;
-
-          if (mpuXIncrement) begin
-            mpuAddressNext <= mpuAddressNext + 1'b1;
-          end
-        end
-        REGISTER_CONTROL      : mpuControl <= mpuDataBus;
-        REGISTER_Y_OFFSET     : videoAddressOffset <= mpuDataBus * 512;
+        REGISTER_X_LOW    : mpuDataBus = pixelWriteAddress[7:0];
+        REGISTER_X_HIGH   : mpuDataBus = pixelWriteAddress[8];
+        REGISTER_Y        : mpuDataBus = pixelWriteAddress[16:9];
+        REGISTER_DATA     : mpuDataBus = dataRegister;
+        REGISTER_CONTROL  : mpuDataBus = controlRegister;
+        REGISTER_Y_OFFSET : mpuDataBus = videoAddressOffset[16:9];
+        default           : mpuDataBus = 8'hff;
       endcase
+    end else begin
+      mpuDataBus = 8'bz;
     end
   end
+
+  always_ff @(posedge registerWriteRequest) begin
+    pixelWriteRequest <= 0;
+
+    case (mpuRegisterSelect)
+      REGISTER_X_LOW    : pixelWriteAddressNext[7:0]  <= mpuDataBus;
+      REGISTER_X_HIGH   : pixelWriteAddressNext[8]    <= mpuDataBus[0];
+      REGISTER_Y        : pixelWriteAddressNext[16:9] <= mpuDataBus;
+      REGISTER_DATA     : begin
+        dataRegister <= mpuDataBus;
+        pixelWriteAddress <= pixelWriteAddressNext;
+
+        if (xIncrement) begin
+          pixelWriteAddressNext <= pixelWriteAddressNext + 1'b1;
+        end
+
+        pixelWriteRequest <= ~pixelWriteRequest;
+      end
+      REGISTER_CONTROL  : controlRegister             <= mpuDataBus;
+      REGISTER_Y_OFFSET : videoAddressOffset          <= { mpuDataBus , 9'b0 };
+    endcase
+  end
+
+  logic [2:0]  pixelWriteRequestDelay;
 
   always_ff @(posedge clock) begin
-    pixelWriteRequestSync <= { pixelWriteRequestSync[1:0], mpuPixelWriteRequest };
-  end
+    pixelWriteRequestDelay <= { pixelWriteRequestDelay[1:0] , pixelWriteRequest };
 
-  always_comb begin
-    if (reset) begin
-      pixelWritePending = 0;
-    end else begin
-      pixelWritePending = pixelWriteRequestSync[2:1] == 2'b10;
-    end
-  end
-
-  always_ff @(posedge pixelWritePending or posedge reset) begin
-    if (reset) begin
-      memoryAddress <= 0;
-      memoryWriteData <= 0;
-    end else begin
-      memoryAddress <= mpuAddress;
-      memoryWriteData <= mpuPixelColor;
-    end
-  end
-
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset) begin
-      memoryWriteRequest <= 0;
-    end else if (!memoryWriteRequest) begin
-      if (pixelWritePending) begin
-        memoryWriteRequest <= 1;
-      end
-    end else begin
+    if (memoryWriteRequest) begin
       memoryWriteRequest <= ~memoryWriteComplete;
+    end else if (pixelWriteRequestDelay[2] != pixelWriteRequestDelay[1]) begin
+      memoryAddress <= pixelWriteAddress;
+      memoryWriteData <= dataRegister;
+      memoryWriteRequest <= 1;
     end
   end
 endmodule
