@@ -1,5 +1,4 @@
 module MemoryManager (
-  input               reset,
   input               clock,
 
   input        [16:0] videoAddress,
@@ -56,37 +55,24 @@ module MemoryManager (
   end
 
   always_ff @(posedge clock) begin
-    if (reset) begin
-      memoryWriteComplete <= 0;
+    if (memoryWriteRequest && (nextState == STATE_MEM_WRITE)) begin
+      memoryWriteStarted <= 1;
+    end
+
+    if (memoryWriteStarted && (nextState == STATE_COMPLETE)) begin
+      memoryWriteComplete <= 1;
       memoryWriteStarted <= 0;
     end else begin
-      if (memoryWriteRequest && (nextState == STATE_MEM_WRITE)) begin
-        memoryWriteStarted <= 1;
-      end
-
-      if (memoryWriteStarted && (nextState == STATE_COMPLETE)) begin
-        memoryWriteComplete <= 1;
-        memoryWriteStarted <= 0;
-      end else begin
-        memoryWriteComplete <= 0;
-      end
+      memoryWriteComplete <= 0;
     end
   end
 
   always_ff @(posedge clock) begin
-    if (reset) begin
-      memoryReadComplete <= 0;
-    end else begin
-      memoryReadComplete <= memoryReadRequest && (nextState == STATE_COMPLETE);
-    end
+    memoryReadComplete <= memoryReadRequest && (nextState == STATE_COMPLETE);
   end
 
   always_ff @(posedge clock) begin
-    if (reset) begin
-      currentState <= 0;
-    end else begin
-      currentState <= nextState;
-    end
+    currentState <= nextState;
   end
 
   always_ff @(negedge clock) begin
@@ -101,41 +87,24 @@ module MemoryManager (
   assign ramData = (memoryWriteStarted || memoryWriteComplete) ? memoryWriteData : 8'bZ;
 
   always_ff @(posedge clock) begin
-    if (reset) begin
-      ramOutputEnable <= 1;
-    end else begin
-      ramOutputEnable <= ~(nextState == STATE_VIDEO_READ || nextState == STATE_MEM_READ);
-    end
+    ramOutputEnable <= ~(nextState == STATE_VIDEO_READ || nextState == STATE_MEM_READ);
   end
 
   always_ff @(posedge clock) begin
-    if (reset) begin
-      ramWriteEnable <= 1;
-    end else begin
-      ramWriteEnable <= ~(nextState == STATE_MEM_WRITE);
-    end
+    ramWriteEnable <= ~(nextState == STATE_MEM_WRITE);
   end
 
   always_ff @(posedge clock) begin
-    if (reset) begin
-      videoData <= 0;
-      memoryReadData <= 0;
-    end else begin
-      case (currentState)
-        STATE_VIDEO_READ : videoData <= ramData;
-        STATE_MEM_READ   : memoryReadData <= ramData;
-      endcase
-    end    
+    case (currentState)
+      STATE_VIDEO_READ : videoData <= ramData;
+      STATE_MEM_READ   : memoryReadData <= ramData;
+    endcase
   end
 
   always_ff @(posedge clock) begin
-    if (reset) begin
-      videoDataReady <= 0;
-    end else begin
-      videoDataReady <= (currentState == STATE_MEM_READ ||
-                        currentState == STATE_MEM_WRITE ||
-                        currentState == STATE_NOP);
-    end
+    videoDataReady <= (currentState == STATE_MEM_READ ||
+                      currentState == STATE_MEM_WRITE ||
+                      currentState == STATE_NOP);
   end
 
 endmodule

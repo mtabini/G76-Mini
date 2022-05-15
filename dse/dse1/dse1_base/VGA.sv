@@ -16,8 +16,6 @@ module VGA(
   input  [7:0]    mpuData
 );
 
-	logic						reset;
-
   logic [2:0]     clockPhase;
   
   logic  [7:0]		pixel1;
@@ -36,7 +34,6 @@ module VGA(
   );
 
 	VideoOutput videoOutput(
-		.reset(reset),
 		.clock(clock),
 		.clockPhase(clockPhase),
 
@@ -53,7 +50,6 @@ module VGA(
 	);
 
 	MemoryManager memoryManager(
-		.reset(reset),
 		.clock(clock),
 		.clockPhase(clockPhase),
 
@@ -74,7 +70,6 @@ module VGA(
 	);
 
 	MPUInterface mpuInterface(
-		.reset(reset),
 		.clock(clock),
 		.clockPhase(clockPhase),
 

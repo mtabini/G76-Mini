@@ -1,6 +1,4 @@
 module MPUInterface(
-
-  input                 reset,
   input                 clock,
   input [2:0]           clockPhase,  
 
@@ -90,67 +88,3 @@ module MPUInterface(
   
 endmodule
 
-
-module MPUInterfaceTB;
-
-  logic           reset;
-  logic           clock;
-  logic [2:0]     clockPhase;
-
-  logic           chipSelect;
-  logic           writeEnable;
-  
-  logic [2:0]    registerSelect;
-  logic [7:0]    registerData;
-  
-  logic [8:0]    writeXCoord;
-  logic [7:0]    writeYCoord;
-  logic [7:0]    writeData;
-  
-  logic           shouldWrite;
-  
-  ClockGenerator clockGenerator(
-    .reset(reset),
-    .clock(clock),
-    .clockPhase(clockPhase)
-  );
-  
-  MPUInterface mpuInterfaceDUT(
-    .reset(reset),
-    .clock(clock),
-    .clockPhase(clockPhase),
-    
-    .chipSelect(chipSelect),
-    .writeEnable(writeEnable),
-    
-    .registerSelect(registerSelect),
-    .registerData(registerData),
-    
-    .writeXCoord(writeXCoord),
-    .writeYCoord(writeYCoord),
-    .writeData(writeData),
-    
-    .shouldWrite(shouldWrite)
-  );
-
-  initial begin
-    clock = 0;
-    reset = 0;
-    writeEnable = 1;
-    registerSelect = 0;
-    registerData = 255;
-    
-    #1 reset = 1;
-    #1 reset = 0;
-    forever begin #1 clock = ~clock;
-    end
-    
-  end
-
-  initial begin
-    chipSelect = 0;
-
-    forever #13 chipSelect = ~chipSelect;
-  end
-  
-endmodule

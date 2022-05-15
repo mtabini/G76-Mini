@@ -1,5 +1,4 @@
 module VideoOutput (
-  input                   reset,
   input                   clock,  
   input [2:0]             clockPhase,
 
@@ -52,87 +51,22 @@ module VideoOutput (
   end
 
 
-  always_ff @(negedge clockPhase[0] or posedge reset) begin
+  always_ff @(negedge clockPhase[0]) begin
 
-    if (reset) begin
-      xAddr = 0;
-      yAddr = 0;
+    if (xAddr == H_LAST_POSITION) begin
+      xAddr = '0;
+      yAddr = (yAddr == V_LAST_POSITION) ? '0 : yAddr + 1'b1;
     end else begin
-      if (xAddr == H_LAST_POSITION) begin
-        xAddr = '0;
-        yAddr = (yAddr == V_LAST_POSITION) ? '0 : yAddr + 1'b1;
-      end else begin
-        xAddr = xAddr + 1'b1;
-      end
+      xAddr = xAddr + 1'b1;
     end
-
   end
 
   always_ff @(posedge clock) begin
     case(clockPhase)
-
       CLOCK_PHASE_RENDER_PIXEL_1: videoData <= inVisibleArea ? pixel1 : 8'hZZ;
       CLOCK_PHASE_RENDER_PIXEL_2: videoData <= inVisibleArea ? pixel2 : 8'hZZ;
-
     endcase
   end
   
-endmodule
-
-
-module VideoOutputTB;
-
-  logic            reset;
-  logic            clock;  
-  logic [2:0]      clockPhase;
-
-  logic [7:0]      pixel1;
-  logic [7:0]      pixel2;
-
-  logic [8:0]      xCoord;
-  logic [7:0]      yCoord;
-
-  logic [7:0]      videoData;
-
-  logic            hSync;
-  logic            vSync;
-
-  
-  ClockGenerator clockGenerator(
-    .reset(reset),
-    .clock(clock),
-    .clockPhase(clockPhase)
-  );
-
-  VideoOutput videoOutputDUT(
-    .reset(reset),
-    .clock(clock),
-    .clockPhase(clockPhase),
-
-    .pixel1(pixel1),
-    .pixel2(pixel2),
-
-    .xCoord(xCoord),
-    .yCoord(yCoord),
-
-    .videoData(videoData),
-
-    .hSync(hSync),
-    .vSync(vSync)
-  );
-
-  initial begin
-    clock = 0;
-    reset = 0;
-
-    pixel1 = 0;
-    pixel2 = 255;
-
-    #1 reset = 1;
-    #1 reset = 0;
-
-    forever #1 clock = ~clock;
-  end
-
 endmodule
 

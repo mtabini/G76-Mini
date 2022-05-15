@@ -1,5 +1,4 @@
 module MemoryManager(
-  input                 reset,
   input                 clock,
   input  [2:0]          clockPhase,
 

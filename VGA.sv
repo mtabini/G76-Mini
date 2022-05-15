@@ -80,33 +80,15 @@ module VGA(
 		.memoryWriteData(memoryWriteData),
 		.memoryWriteComplete(memoryWriteComplete),
 
+		.memoryReadRequest(memoryReadRequest),
+		.memoryReadData(memoryReadData),
+		.memoryReadComplete(memoryReadComplete),
+
 		.mpuChipSelect(mpuChipSelect),
 		.mpuWriteEnable(mpuWriteEnable),
 		.mpuRegisterSelect(mpuRegisterSelect),
 		.mpuDataBus(mpuData)
 	);
-
-	// assign videoHighResMode = 0;
-
-	// logic pixelClock;
-
-	// logic [9:0] x;
-	// logic [8:0] y;
-
-  // always_ff @(posedge clock) begin
-	// 	pixelClock <= ~pixelClock;
-  // end
-
-	// always_ff @(posedge pixelClock) begin
-	// 	if (x == 799) begin
-	// 		x <= 0;
-	// 		y <= y == 524 ? 0 : y + 1'b1;
-	// 	end else begin
-	// 		x <= x + 1'b1;
-	// 	end
-
-	// 	videoData <= x % 256;
-	// end
 
 endmodule
 
