@@ -130,8 +130,9 @@ You can then use Quartus II Prime Lite 21.1 to both compile and upload your desi
 
 ### Theory of operation
 
-The system is composed of four main modules:
+The system is written in SystemVerilog and is composed of four main modules:
 
+- [VGA](./VGA.sv) is the top-level interface that glues everything together and connects to the outside world.
 - [MemoryManager](./memory_manager.sv) provides overall pacing synchronized to the main 50MHz clock signal, and primarily dictated by having to share access to the external RAM between video output and MPU write access.
 - [VideoOutput](./video_output.sv) generates the VGA output and sync signals, in addition to the vertical refresh IRQ.
 - [MPUInterface](./mcu_interface.sv) manages the interface with the external processing unit bus.
@@ -144,8 +145,6 @@ MemoryManager operates on a sequence made up of four clock cycles:
 - During the last cycle, it sets the memory bus up for the next video data read.
 
 This effectively results in 2 memory operations occurring at 12.5MHz, which is sufficient for a horizontal resolution of 320 pixels at 8BPP. Given that the CY7C1018DV33 has a read/write cycle of 10ns, there is plenty of headroom, and a faster clock (or cleverer algorithm) may result in more bandwidth.
-
-Note that MemoryManager includes functionality for random-access reads from the video RAM, but these aren't used anywhere in the design. I had originally intended to provide read/write access from the MPU, but eventually decided against it; since I had already written the read functionality in MemoryManager, I just left it in there. This means that it might be relatively easy to make the MPU interface bidirectional, or that it might be possible to further simplify MemoryManager to save some additional gates and jam extra functionality in the CPLD for your own design.
 
 The VideoOutput module is little more than a glorified counter; it simply keeps track of the raster position, issues the appropriate sync signals to the VGA interface, and ensures that the right pixel is being output at all times. Note that the system operates at a pixel clock 25MHz, which is _technically_ out of spec, as [the standard](http://tinyvga.com/vga-timing/640x480@60Hz) expects 25.175MHz. I suspect that most modern monitors will be fine with it (mine reports a 61Hz signal, but doesn't seem to care), but older CRTs may be unhappy and possibly even damaged by the signal. Please keep this in mind!
 
