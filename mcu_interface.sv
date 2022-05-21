@@ -4,16 +4,14 @@ module MCUInterface(
   output logic [16:0]   videoAddressOffset,
   output                videoHighResMode,
 
-  output logic [16:0]   memoryAddress,
+  output logic [16:0]   memoryWriteAddress,
   output logic          memoryWriteRequest,
   output logic [7:0]    memoryWriteData,
 
   input                 memoryWriteComplete,
 
-  output logic          memoryReadRequest,
-  
+  output logic [16:0]   memoryReadAddress,  
   input [7:0]           memoryReadData,
-  input                 memoryReadComplete,
 
   input                 mpuChipSelect,
   input                 mpuWriteEnable,
@@ -40,8 +38,6 @@ module MCUInterface(
 
   logic [7:0]   dataRegister;
   logic [1:0]   controlRegister;
-
-  logic         pixelReadRequest;
 
   logic         pixelWriteRequest;
   logic [16:0]  pixelWriteAddress;
@@ -73,39 +69,38 @@ module MCUInterface(
     end
   end
 
+  always_comb begin
+    memoryReadAddress = pixelWriteAddressNext;
+  end
+
   always_ff @(posedge mpuChipSelect) begin
     if (registerWriteRequest) begin
       case (mpuRegisterSelect)
         REGISTER_X_LOW    : begin
           pixelWriteAddressNext[7:0]  <= mpuDataBus;
-          // pixelReadRequest <= ~pixelReadRequest;
         end
         REGISTER_X_HIGH   : begin
           pixelWriteAddressNext[8]    <= mpuDataBus[0];
-          // pixelReadRequest <= ~pixelReadRequest;
         end
         REGISTER_Y        : begin
           pixelWriteAddressNext[16:9] <= mpuDataBus;
-          pixelReadRequest <= ~pixelReadRequest;
         end
         REGISTER_DATA     : begin
           dataRegister <= mpuDataBus;
           pixelWriteAddress <= pixelWriteAddressNext;
-
-          if (xIncrement) begin
-            pixelWriteAddressNext <= pixelWriteAddressNext + 1'b1;
-          end
-
           pixelWriteRequest <= ~pixelWriteRequest;
         end
         REGISTER_CONTROL  : controlRegister             <= mpuDataBus[1:0];
         REGISTER_Y_OFFSET : videoAddressOffset          <= { mpuDataBus , 9'b0 };
       endcase
     end
+
+    if (mpuRegisterSelect == REGISTER_DATA && xIncrement) begin
+      pixelWriteAddressNext <= pixelWriteAddressNext + 1'b1;
+    end
   end
 
   logic [2:0] pixelWriteRequestDelay;
-  logic [2:0] pixelReadRequestDelay;
 
   always_ff @(posedge clock) begin
     pixelWriteRequestDelay <= { pixelWriteRequestDelay[1:0] , pixelWriteRequest };
@@ -113,18 +108,9 @@ module MCUInterface(
     if (memoryWriteRequest) begin
       memoryWriteRequest <= ~memoryWriteComplete;
     end else if (pixelWriteRequestDelay[2] != pixelWriteRequestDelay[1]) begin
-      memoryAddress <= pixelWriteAddress;
+      memoryWriteAddress <= pixelWriteAddress;
       memoryWriteData <= dataRegister;
       memoryWriteRequest <= 1;
-    end
-
-    pixelReadRequestDelay <= { pixelReadRequestDelay[1:0] , pixelReadRequest };
-
-    if (memoryReadRequest) begin
-      memoryReadRequest <= ~memoryReadComplete;
-    end else if (pixelReadRequestDelay[2] != pixelReadRequestDelay[1]) begin
-      memoryAddress <= pixelWriteAddressNext;
-      memoryReadRequest <= 1;
     end
   end
 endmodule

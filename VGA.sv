@@ -22,7 +22,8 @@ module VGA(
 	logic           videoDataReady;
 	logic 					videoHighResMode;
 
-  logic  [16:0]   memoryAddress;
+  logic  [16:0]   memoryWriteAddress;
+	logic  [16:0]   memoryReadAddress;
 
   logic           memoryReadRequest;
   logic           memoryWriteRequest;
@@ -41,13 +42,13 @@ module VGA(
 		.videoData(videoData),
 		.videoDataReady(videoDataReady),
 
-		.memoryAddress(memoryAddress),
-		.memoryReadRequest(memoryReadRequest),
 		.memoryWriteRequest(memoryWriteRequest),
-		.memoryReadData(memoryReadData),
+		.memoryWriteAddress(memoryWriteAddress),
 		.memoryWriteData(memoryWriteData),
 		.memoryWriteComplete(memoryWriteComplete),
-		.memoryReadComplete(memoryReadComplete),
+
+		.memoryReadAddress(memoryReadAddress),
+		.memoryReadData(memoryReadData),
 
 		.ramAddress(ramAddress),
 		.ramData(ramData),
@@ -75,14 +76,13 @@ module VGA(
 		.videoAddressOffset(videoAddressOffset),
 		.videoHighResMode(videoHighResMode),
 
-		.memoryAddress(memoryAddress),
 		.memoryWriteRequest(memoryWriteRequest),
+		.memoryWriteAddress(memoryWriteAddress),
 		.memoryWriteData(memoryWriteData),
 		.memoryWriteComplete(memoryWriteComplete),
 
-		.memoryReadRequest(memoryReadRequest),
+		.memoryReadAddress(memoryReadAddress),
 		.memoryReadData(memoryReadData),
-		.memoryReadComplete(memoryReadComplete),
 
 		.mpuChipSelect(mpuChipSelect),
 		.mpuWriteEnable(mpuWriteEnable),

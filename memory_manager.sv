@@ -7,15 +7,13 @@ module MemoryManager (
   output logic  [7:0] videoData,
   output logic        videoDataReady,
 
-  input        [16:0] memoryAddress,
-
-  input               memoryReadRequest,
   input               memoryWriteRequest,
+  input        [16:0] memoryWriteAddress,
   input         [7:0] memoryWriteData,  
-  
-  output logic  [7:0] memoryReadData,
-  output logic        memoryReadComplete,
   output logic        memoryWriteComplete,
+  
+  input        [16:0] memoryReadAddress,
+  output logic  [7:0] memoryReadData,
 
   output logic [16:0] ramAddress,
   inout         [7:0] ramData,
@@ -29,8 +27,7 @@ module MemoryManager (
     STATE_VIDEO_READ          = 1,
     STATE_MEM_READ            = 2,
     STATE_MEM_WRITE           = 3,
-    STATE_NOP                 = 4,
-    STATE_COMPLETE            = 5;
+    STATE_COMPLETE            = 4;
 
   logic [2:0]   currentState;
   logic [2:0]   nextState;
@@ -41,13 +38,10 @@ module MemoryManager (
         STATE_IDLE:                                         nextState = STATE_VIDEO_READ;
 
         STATE_VIDEO_READ:       if (memoryWriteRequest)     nextState = STATE_MEM_WRITE;
-                                else if (memoryReadRequest) nextState = STATE_MEM_READ;
-                                else                        nextState = STATE_NOP;
+                                else                        nextState = STATE_MEM_READ;
 
         STATE_MEM_WRITE:                                    nextState = STATE_COMPLETE;
         STATE_MEM_READ:                                     nextState = STATE_COMPLETE;
-        STATE_NOP:                                          nextState = STATE_COMPLETE;
-
         STATE_COMPLETE:                                     nextState = STATE_IDLE;
         
         default:                                            nextState = STATE_IDLE;
@@ -68,10 +62,6 @@ module MemoryManager (
   end
 
   always_ff @(posedge clock) begin
-    memoryReadComplete <= memoryReadRequest && (nextState == STATE_COMPLETE);
-  end
-
-  always_ff @(posedge clock) begin
     currentState <= nextState;
   end
 
@@ -79,8 +69,8 @@ module MemoryManager (
     case(nextState)
       STATE_IDLE,
       STATE_VIDEO_READ : ramAddress <= videoAddress + videoAddressOffset;
-      STATE_MEM_READ,   
-      STATE_MEM_WRITE  : ramAddress <= memoryAddress + videoAddressOffset;
+      STATE_MEM_READ   : ramAddress <= memoryReadAddress + videoAddressOffset;   
+      STATE_MEM_WRITE  : ramAddress <= memoryWriteAddress + videoAddressOffset;
     endcase
   end
 
@@ -103,8 +93,7 @@ module MemoryManager (
 
   always_ff @(posedge clock) begin
     videoDataReady <= (currentState == STATE_MEM_READ ||
-                      currentState == STATE_MEM_WRITE ||
-                      currentState == STATE_NOP);
+                       currentState == STATE_MEM_WRITE);
   end
 
 endmodule
