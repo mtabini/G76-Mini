@@ -5,7 +5,7 @@
 
 The G76 Mini is a simple and inexpensive VGA module for homebrew retrocomputing projects. It requires only a handful of inexpensive and easy-to-procure components and can be either integrated into SBC designs or as a standalone board that can interface with most 8-bit architectures (though it was built with the 6502 in mind). You can view a demo of the interface running [on YouTube](https://youtu.be/on7V5krxY_A).
 
-The hardware design uses the [Max II family](https://www.intel.com/content/dam/altera-www/global/zh_CN/pdfs/literature/hb/max2/max2_mii5v1_01.pdf) by Altera (now Intel), but the SystemVerilog code should be easily portable to other CPLDs or FPGAs, since it doesn't use any proprietary IP; when programmed on an EPM240 chip, which, while technically obsolete, can easily be obtained for around $2 on eBay or AliExpress, the design leaves around 10% of LUTs and 20 or so pins free for any additional glue logic you might need. With the added cost of SRAM and passives, the interface can be incorporated into an existing design for around $5, or built as a standalone board for around $10.
+The hardware design uses the EPM240 from the [Max II family](https://www.intel.com/content/dam/altera-www/global/zh_CN/pdfs/literature/hb/max2/max2_mii5v1_01.pdf) by Altera (now Intel), but the SystemVerilog code should be easily portable to other CPLDs or FPGAs, since it doesn't use any proprietary IP. The EPM240, while technically obsolete, can easily be obtained for around $3 (as of May 2022) on eBay or AliExpress; with the added cost of SRAM and passives, the interface can be incorporated into an existing design for around $5, or built as a standalone board for around $10.
 
 It is additionally possible to completely avoid having to solder SMD parts by purchasing a MAX II EPM240 minimal development board and building a shield on top of it. These typically cost $10 on sites like AliExpress and come with a USB Blaster JTAG programmer to boot.
 
@@ -16,19 +16,18 @@ The G76 Mini supports these features:
 - Completely asynchronous operation; you should be able to just bitbang data into the registers at the typical speeds supported by most hobbyist retrocomputing projects.
 - 320x240 resolution at 8BPP (RRRGGGBB), rendered as a 640x480 @ 60Hz standard VGA signal.
 - 640x240 resolution at 4BPP “high res” mode using a CGA-like palette, capable of 80x30 text (though you will have to implement the text rendering in software).
-- Hardware accelerated vertical scrolling (handy for text displays).
+- Full read and write access to the video RAM through a set of interface registers.
+- Hardware-accelerated vertical scrolling (handy for text displays).
 - Toggable self-incrementing X coordinate for faster data transfers.
 - Active-low interrupt when entering the non-visible area at the bottom of the screen.
 
 ### Features that almost made the cut
 
-A main limitation of the system is that it is write-only; data can be read back from the various registers, but it will not reflect the contents of the onboard video RAM.
-
-In addition, the design doesn't support tiling or sprites; there just isn't enough space for them in the EPM240. This is something that I eventually plan to add (possibly after some additional cleanup), but it will likely require more expensive hardware.
+The design doesn't support tiling or sprites; there just isn't enough space for them in the EPM240. This is something that I eventually plan to add (possibly after some additional cleanup), but it will likely require more expensive—or, at least, more powerful—hardware.
 
 It should be possible to rewrite the video rendering code to use the 640x400 @ 72Hz VGA mode, thus supporting 8PP even in high-res mode. I am not sure, however, that the design would still fit in an EPM240, and every monitor in my possession struggles to support that resolution, so I didn't really bother with it. An interesting alternative would be to still use 640x480 @ 60Hz, but only render 400 vertical lines through the judicious use of borders.
 
-Finally, there currently is no reset mechanism. This was an oversight (as witnessed by the fact that the individual modules kind-of support a reset signal) that I plan to revisit in the future.
+Finally, there currently is no reset mechanism. Though initially an oversight, this eventually proved to be a requirement to fit the design within the available number of gates.
 
 ## Programming guide
 
@@ -40,20 +39,22 @@ The G76 Mini implements 6 addressable 8-bit registers:
 | 1 | Bit 0: High bit of X coordinate<br>Bits 1-7: Unused |
 | 2 | Y coordinate |
 | 3 | Pixel Data |
-| 4 | Control<br>Bit 0: Enable/disable X coordinate auto-increment<br>Bit 1: Enable/disable high res mode<br>Bits 2-7: Unused |
+| 4 | Control<br>Bit 0: Enable/disable X coordinate auto-increment<br>Bit 1: Enable/disable high res mode<br>Bit 2: Enable/disable vertical blank interrupt signal<br>Bit 3: Vertical blank status (read-only)<br>Bits 4-7: Unused |
 | 5 | Y Offset |
 
 In order to write a single pixel, you first set the X and Y coordinates (in any order), then write the appropriate color value in the Pixel Data register. The new value is placed in the interface's internal memory approximately 60ns later, at which point the system is ready for a new pixel (note, however, that you can start setting new coordinates after only approximately 20ns). Unless auto-increment mode is on, the X and Y coordinates are preserved indefinitely; this helps minimize the need to write data to the coordinate registers, thus speeding up operations.
 
+Reading works in the same way, including support for automatic X-coordinate increment.
+
 ### Using the auto-increment mode
 
-If Bit 0 of the Control register is set, the internal address pointer is incremented by 1 every time a new value is written to the Pixel Data register. This allows you to write entire rows of pixels without having to reset the coordinates every time. 
+If Bit 0 of the Control register is set, the internal address pointer is incremented by 1 every time a new value is written to or read from the Pixel Data register. This allows you to read and write entire rows of pixels without having to reset the coordinates every time. 
 
-Note that the increment mechanism is unaware of the system's internal memory layout; thus, if you are in high-res mode, the X coordinate is incremented by _two_ pixels with every write, and, if you exceed the horizontal resolution, you will have to write another 80 values to the Pixel Data register before ending up at the beginning of the next visible line.
+Note that the increment mechanism is unaware of the system's internal memory layout; thus, if you are in high-res mode, the X coordinate is incremented by _two_ pixels with every access, and, if you exceed the horizontal resolution, you will have to access another 80 values to the Pixel Data register before ending up at the beginning of the next visible line (in practice, you will simply want to reset your coordinates to the beginning of the next line).
 
 ### Using hardware-accelerated Y scrolling
 
-Writing a value into the Y Offset register causes the display to be shifted down (that is, scroll up) by a corresponding number of lines. This feature is designed to aid in the implementation of text displays, since the G76 Mini doesn't support any text modes and re-rendering the entire screen would be exceedingly slow. Instead, when the cursor reaches the end of the screen, a new line of text can be rendered beyond the bottom of the display (i.e.: at row 240), and then the Y Offset register incremented by the pixel height of the font used.
+Writing a value into the Y Offset register causes the display to be shifted down (that is, scroll up) by a corresponding number of lines. This feature is designed to aid in the implementation of text displays, since the G76 Mini doesn't support any text modes and re-rendering the entire screen would be exceedingly slow. Instead, when the cursor reaches the end of the screen, a new line of text can be rendered beyond the bottom of the display (i.e.: starting at row 240), and then the Y Offset register incremented by the pixel height of the font used.
 
 Note that the Y coordinate register is _relative_ to the Y offset. That means that “Y coordinate 0” is always the top row of the _visible_ portion of the display, regardless of what the Y Offset register is set to.
 
@@ -82,13 +83,19 @@ In this mode, each nibble describes a pixel, which is rendered using a palette t
 | 14 | Yellow |
 | 15 | White |
 
-Note that the X coordinate register is unaware of the difference in resolution between standard and high-res modes; therefore, you can only really address two pixels at a time, and will always end up writing on an even coordinate by default (e.g.: writing a byte to “x coordinate 0” writes both pixels at `x=0` and `x=1`). This is caused by the fact that, internally, reading a byte value so that individual bits could be updated would be too time-intensive, and so I left it purposefully out of the design. It makes high-res mode much less useful for dynamic display, though it is, of course, still possible to do so.
+Note that the X coordinate register is unaware of the difference in resolution between standard and high-res modes; therefore, you can only really address two pixels at a time, and will always end up accessing an even coordinate by default (e.g.: writing a byte to “x coordinate 0” writes both pixels at `x=0` and `x=1`). This is caused by the fact that, internally, reading a byte value so that individual bits could be updated would be too time-intensive, and so I left it purposefully out of the design. It makes high-res mode much less useful for dynamic display, though it is, of course, still possible to do so.
+
+## Synchronizing with the screen's vertical refresh
+
+If you enable bit 2 of the Control Register, the system pulses the  `/VOUT_IRQ` low for approximately 20ns when the screen rendering enters the vertical blanking interval, thus allowing you to synchronize your screen updates to the monitor's natural refresh rate for flicker-free animations.
+
+Alternatively, you can synchronously observe bit 3, which the interface sets to 1 whenever the raster is in the blanking interval, to synchronize without having to write an interrupt handler.
 
 ## Hardware interface
 
 The hardware interface requires 8 data lines and 3 address lines to access the registers, as well as a Chip Select (active high), and a Read/Write (active low) line. Data is written on the rising edge of Read/Write when Chip Select is high. Data and address lines need to be valid for approximately 20ns after Read/Write rises to allow the CPLD to read the values.
 
-Optionally, an IRQ line, active low, can be used to detect when the display raster enters the non-visible zone at the end of the screen; this enables synchronized rendering to avoid flickering.
+Optionally, a `/VOUT_IRQ` line, active low, can be used to detect when the display raster enters the non-visible zone at the end of the screen; this enables synchronized rendering to avoid flickering.
 
 The interface operates at 3.3V and is **not 5V safe.** Interoperation with a 5V design should be possible using a level shifter, but this is as yet untested.
 
@@ -96,7 +103,7 @@ The interface operates at 3.3V and is **not 5V safe.** Interoperation with a 5V 
 
 The G76 Mini reads data when the `MPU_CS` signal goes high (and, for write operations, when the `/MPU_WE` signal goes low). This makes it compatible with most 8-bit CPUs like the Z80 and 6502, so long as you provide the glue logic required to control the `MPU_CS` signal.
 
-On the latter, this means that you will need to qualify `MPU_CS` with the CPU's clock signal, because the 6502 doesn't place a valid address on the bus until the high part of the clock cycle. Thus, `MPU_CS` can only go high at the same time as the `PHI2` signal that provides the clock.
+In a design based on the 6502, this means that you will need to qualify `MPU_CS` with the CPU's clock signal, because the CPU doesn't place a valid address on the bus until the high part of the clock cycle. Thus, `MPU_CS` can only go high at the same time as the `PHI2` signal that provides the clock.
 
 ## Reference design
 
