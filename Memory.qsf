@@ -115,3 +115,4 @@ set_global_assignment -name SYSTEMVERILOG_FILE mcu_interface.sv
 set_global_assignment -name SYSTEMVERILOG_FILE memory_manager.sv
 set_global_assignment -name SYSTEMVERILOG_FILE video_output.sv
 set_global_assignment -name SYSTEMVERILOG_FILE VGA.sv
+set_location_assignment PIN_29 -to mpuVideoInterrupt

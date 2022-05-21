@@ -3,6 +3,7 @@ module MCUInterface(
 
   output logic [16:0]   videoAddressOffset,
   output                videoHighResMode,
+  input                 videoVBlank,
 
   output logic [16:0]   memoryWriteAddress,
   output logic          memoryWriteRequest,
@@ -16,7 +17,8 @@ module MCUInterface(
   input                 mpuChipSelect,
   input                 mpuWriteEnable,
   input  [2:0]          mpuRegisterSelect,
-  inout  [7:0]          mpuDataBus
+  inout  [7:0]          mpuDataBus,
+  output                mpuVideoInterrupt
 );
 
 
@@ -30,14 +32,17 @@ module MCUInterface(
 
   parameter
     CONTROL_X_AUTOINCREMENT   = 0,
-    CONTROL_HIGH_RES_MODE     = 1;
+    CONTROL_HIGH_RES_MODE     = 1,
+    CONTROL_VBLANK_INTERRUPT  = 2,
+    CONTROL_VBLANK_ACTIVE     = 3;
 
 
   logic        registerWriteRequest;
   logic        registerReadRequest;
 
   logic [7:0]   dataRegister;
-  logic [1:0]   controlRegister;
+  logic [2:0]   controlRegister;
+  logic         controlVBlank;
 
   logic         pixelWriteRequest;
   logic [16:0]  pixelWriteAddress;
@@ -60,12 +65,25 @@ module MCUInterface(
         REGISTER_X_HIGH   : mpuDataBus = pixelWriteAddress[8];
         REGISTER_Y        : mpuDataBus = pixelWriteAddress[16:9];
         REGISTER_DATA     : mpuDataBus = memoryReadData;
-        REGISTER_CONTROL  : mpuDataBus = { 5'b00000 , controlRegister };
+        REGISTER_CONTROL  : mpuDataBus = { 4'b0000 , videoVBlank , controlRegister };
         REGISTER_Y_OFFSET : mpuDataBus = videoAddressOffset[16:9];
         default           : mpuDataBus = 8'hff;
       endcase
     end else begin
       mpuDataBus = 8'bz;
+    end
+  end
+
+  always_ff @(posedge clock) begin
+    mpuVideoInterrupt <= 1;
+
+    if (videoVBlank) begin
+      if (!controlVBlank && controlRegister[CONTROL_VBLANK_INTERRUPT]) begin
+        mpuVideoInterrupt <= 0;
+        controlVBlank <= 1;
+      end
+    end else begin
+      controlVBlank <= 0;
     end
   end
 
@@ -76,21 +94,15 @@ module MCUInterface(
   always_ff @(posedge mpuChipSelect) begin
     if (registerWriteRequest) begin
       case (mpuRegisterSelect)
-        REGISTER_X_LOW    : begin
-          pixelWriteAddressNext[7:0]  <= mpuDataBus;
-        end
-        REGISTER_X_HIGH   : begin
-          pixelWriteAddressNext[8]    <= mpuDataBus[0];
-        end
-        REGISTER_Y        : begin
-          pixelWriteAddressNext[16:9] <= mpuDataBus;
-        end
+        REGISTER_X_LOW    : pixelWriteAddressNext[7:0]  <= mpuDataBus;
+        REGISTER_X_HIGH   : pixelWriteAddressNext[8]    <= mpuDataBus[0];
+        REGISTER_Y        : pixelWriteAddressNext[16:9] <= mpuDataBus;
         REGISTER_DATA     : begin
           dataRegister <= mpuDataBus;
           pixelWriteAddress <= pixelWriteAddressNext;
           pixelWriteRequest <= ~pixelWriteRequest;
         end
-        REGISTER_CONTROL  : controlRegister             <= mpuDataBus[1:0];
+        REGISTER_CONTROL  : controlRegister             <= mpuDataBus[2:0];
         REGISTER_Y_OFFSET : videoAddressOffset          <= { mpuDataBus , 9'b0 };
       endcase
     end

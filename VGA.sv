@@ -13,7 +13,8 @@ module VGA(
   input           mpuChipSelect,
   input           mpuWriteEnable,
   input  [2:0]    mpuRegisterSelect,
-  inout  [7:0]    mpuData
+  inout  [7:0]    mpuData,
+	output					mpuVideoInterrupt
 );
 
 	logic  [16:0]   videoAddress;
@@ -21,6 +22,7 @@ module VGA(
 	logic  [7:0]		videoData;
 	logic           videoDataReady;
 	logic 					videoHighResMode;
+	logic 					videoVBlank;
 
   logic  [16:0]   memoryWriteAddress;
 	logic  [16:0]   memoryReadAddress;
@@ -67,7 +69,8 @@ module VGA(
 		.videoOutput(videoOutputData),
 
 		.hSync(hSync),
-		.vSync(vSync)
+		.vSync(vSync),
+		.vBlank(videoVBlank)
 	);
 
 	MCUInterface mcuInterface(
@@ -75,6 +78,7 @@ module VGA(
 
 		.videoAddressOffset(videoAddressOffset),
 		.videoHighResMode(videoHighResMode),
+		.videoVBlank(videoVBlank),
 
 		.memoryWriteRequest(memoryWriteRequest),
 		.memoryWriteAddress(memoryWriteAddress),
@@ -87,7 +91,8 @@ module VGA(
 		.mpuChipSelect(mpuChipSelect),
 		.mpuWriteEnable(mpuWriteEnable),
 		.mpuRegisterSelect(mpuRegisterSelect),
-		.mpuDataBus(mpuData)
+		.mpuDataBus(mpuData),
+		.mpuVideoInterrupt(mpuVideoInterrupt)
 	);
 
 endmodule

@@ -9,6 +9,7 @@ module VideoOutput (
 
   output logic [7:0]    videoOutput,
 
+  output logic          vBlank,
   output logic          hSync,
   output logic          vSync
 );
@@ -47,6 +48,7 @@ module VideoOutput (
     inVisibleArea = (xAddr < H_VISIBLE_AREA && yAddr < V_VISIBLE_AREA);
     hSync = (xAddr < H_SYNC_PULSE_START || xAddr > H_SYNC_PULSE_END);
     vSync = (yAddr < V_SYNC_PULSE_START || yAddr > V_SYNC_PULSE_END);
+    vBlank = (yAddr > V_VISIBLE_AREA);
   end
 
   always_ff @(posedge clock) begin
