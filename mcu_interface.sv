@@ -74,8 +74,14 @@ module MCUInterface(
     end
   end
 
+  logic videoInterruptClearRequest;
+  logic videoInterruptClearStatus;
+
   always_ff @(posedge clock) begin
-    mpuVideoInterrupt <= 1;
+    if (!controlRegister[CONTROL_VBLANK_INTERRUPT] || videoInterruptClearRequest != videoInterruptClearStatus) begin
+      mpuVideoInterrupt <= 1;
+      videoInterruptClearStatus <= videoInterruptClearRequest;
+    end
 
     if (videoVBlank) begin
       if (!controlVBlank && controlRegister[CONTROL_VBLANK_INTERRUPT]) begin
@@ -102,7 +108,10 @@ module MCUInterface(
           pixelWriteAddress <= pixelWriteAddressNext;
           pixelWriteRequest <= ~pixelWriteRequest;
         end
-        REGISTER_CONTROL  : controlRegister             <= mpuDataBus[2:0];
+        REGISTER_CONTROL  : begin
+          controlRegister <= mpuDataBus[2:0];
+          videoInterruptClearRequest <= ~videoInterruptClearRequest;
+        end
         REGISTER_Y_OFFSET : videoAddressOffset          <= { mpuDataBus , 9'b0 };
       endcase
     end

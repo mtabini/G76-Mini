@@ -3,7 +3,7 @@
 ![320x240 8BPP palette demo](https://raw.githubusercontent.com/mtabini/G76-Mini/main/img/palette.jpeg?token=GHSAT0AAAAAABTFPRVX3R6AFZ6QSDOHAJCYYSTEFOA)
 ![640x240 4BPP “high res” palette demo (bonus 80-column text)](https://raw.githubusercontent.com/mtabini/G76-Mini/main/img/palette_highres.jpeg?token=GHSAT0AAAAAABTFPRVWUIKQVOPRYHQJWV7EYSTEEYA)
 
-The G76 Mini is a simple and inexpensive VGA module for homebrew retrocomputing projects. It requires only a handful of inexpensive and easy-to-procure components and can be either integrated into SBC designs or as a standalone board that can interface with most 8-bit architectures (though it was built with the 6502 in mind). You can view a demo of the interface running [on YouTube](https://youtu.be/on7V5krxY_A).
+The G76 Mini is a simple and inexpensive VGA module for homebrew retrocomputing projects. It requires only a handful of easy-to-procure components and can be either integrated into SBC designs or as a standalone board that can interface with most 8-bit architectures (though it was built with the 6502 in mind). You can view a demo of the interface running [on YouTube](https://youtu.be/on7V5krxY_A).
 
 The hardware design uses the EPM240 from the [Max II family](https://www.intel.com/content/dam/altera-www/global/zh_CN/pdfs/literature/hb/max2/max2_mii5v1_01.pdf) by Altera (now Intel), but the SystemVerilog code should be easily portable to other CPLDs or FPGAs, since it doesn't use any proprietary IP. The EPM240, while technically obsolete, can easily be obtained for around $3 (as of May 2022) on eBay or AliExpress; with the added cost of SRAM and passives, the interface can be incorporated into an existing design for around $5, or built as a standalone board for around $10.
 
@@ -39,14 +39,14 @@ The G76 Mini implements 6 addressable 8-bit registers:
 | 1 | Bit 0: High bit of X coordinate<br>Bits 1-7: Unused |
 | 2 | Y coordinate |
 | 3 | Pixel Data |
-| 4 | Control<br>Bit 0: Enable/disable X coordinate auto-increment<br>Bit 1: Enable/disable high res mode<br>Bit 2: Enable/disable vertical blank interrupt signal<br>Bit 3: Vertical blank status (read-only)<br>Bits 4-7: Unused |
+| 4 | Control<br>Bit 0: Enable/disable X coordinate auto-increment<br>Bit 1: Enable/disable high res mode<br>Bit 2: Enable/disable vertical blank interrupt signal<br>Bit 3: Vertical blank status (read-only)<br>Bits 4-7: Unused<br><br>Writing to this register also clears the vertical blanking interrupt.|
 | 5 | Y Offset |
 
 In order to write a single pixel, you first set the X and Y coordinates (in any order), then write the appropriate color value in the Pixel Data register. The new value is placed in the interface's internal memory approximately 60ns later, at which point the system is ready for a new pixel (note, however, that you can start setting new coordinates after only approximately 20ns). Unless auto-increment mode is on, the X and Y coordinates are preserved indefinitely; this helps minimize the need to write data to the coordinate registers, thus speeding up operations.
 
 Reading works in the same way, including support for automatic X-coordinate increment.
 
-### Using the auto-increment mode
+### Using auto-increment mode
 
 If Bit 0 of the Control register is set, the internal address pointer is incremented by 1 every time a new value is written to or read from the Pixel Data register. This allows you to read and write entire rows of pixels without having to reset the coordinates every time. 
 
@@ -87,9 +87,13 @@ Note that the X coordinate register is unaware of the difference in resolution b
 
 ## Synchronizing with the screen's vertical refresh
 
-If you enable bit 2 of the Control Register, the system pulses the  `/VOUT_IRQ` low for approximately 20ns when the screen rendering enters the vertical blanking interval, thus allowing you to synchronize your screen updates to the monitor's natural refresh rate for flicker-free animations.
+If you enable bit 2 of the Control Register, the system brings the  `/VOUT_IRQ` line low when the screen rendering enters the vertical blanking interval, thus allowing you to synchronize your screen updates to the monitor's natural refresh rate for flicker-free animations.
 
-Alternatively, you can synchronously observe bit 3, which the interface sets to 1 whenever the raster is in the blanking interval, to synchronize without having to write an interrupt handler.
+Note that the line remains asserted low until you write any value to the Control register (you can simply read the register and write back onto itself so that you won't make any changes to it), or until you disable interrupts altogether. This is important: If you don't clear the interrupt before exiting your interrupt handler, your computer will likely get stuck in a perpetual loop!
+
+When writing software for a computer that uses the G76 Mini, you should plan for the fact that the interface could be pulling the IRQ line low on soft boot, and therefore should clear it explicitly on boot before you allow the CPU to process interrupts.
+
+If you don't want to deal with interrupts at all, you can simply synchronously observe bit 3 of the Control register, which the interface sets to 1 whenever the raster is in the blanking interval.
 
 ## Hardware interface
 

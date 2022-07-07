@@ -8,7 +8,6 @@ module VGA(
   output  [16:0]  ramAddress,
   inout   [7:0]   ramData,
   output          ramWriteEnable,
-  output          ramOutputEnable,
   
   input           mpuChipSelect,
   input           mpuWriteEnable,
@@ -54,7 +53,6 @@ module VGA(
 
 		.ramAddress(ramAddress),
 		.ramData(ramData),
-		.ramOutputEnable(ramOutputEnable),
 		.ramWriteEnable(ramWriteEnable)
 	);
 

@@ -18,7 +18,6 @@ module MemoryManager (
   output logic [16:0] ramAddress,
   inout         [7:0] ramData,
 
-  output logic        ramOutputEnable,
   output logic        ramWriteEnable
 );
 
@@ -75,10 +74,6 @@ module MemoryManager (
   end
 
   assign ramData = (memoryWriteStarted || memoryWriteComplete) ? memoryWriteData : 8'bZ;
-
-  always_ff @(posedge clock) begin
-    ramOutputEnable <= ~(nextState == STATE_VIDEO_READ || nextState == STATE_MEM_READ);
-  end
 
   always_ff @(posedge clock) begin
     ramWriteEnable <= ~(nextState == STATE_MEM_WRITE);

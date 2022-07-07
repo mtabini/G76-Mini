@@ -62,7 +62,6 @@ set_location_assignment PIN_12 -to clock
 set_location_assignment PIN_30 -to hSync
 set_location_assignment PIN_33 -to vSync
 set_location_assignment PIN_78 -to ramWriteEnable
-set_location_assignment PIN_77 -to ramOutputEnable
 set_location_assignment PIN_81 -to ramAddress[0]
 set_location_assignment PIN_82 -to ramAddress[1]
 set_location_assignment PIN_83 -to ramAddress[2]
@@ -116,3 +115,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE memory_manager.sv
 set_global_assignment -name SYSTEMVERILOG_FILE video_output.sv
 set_global_assignment -name SYSTEMVERILOG_FILE VGA.sv
 set_location_assignment PIN_29 -to mpuVideoInterrupt
+set_global_assignment -name ENABLE_OCT_DONE OFF
+set_global_assignment -name GENERATE_SVF_FILE ON
+set_global_assignment -name USE_CONFIGURATION_DEVICE ON
+set_global_assignment -name MAX_LABS 24
